@@ -1,5 +1,4 @@
-#src = $(wildcard *.c core/*.c)
-src = $(wildcard *.c)
+src = $(wildcard *.c src/*.c)
 obj = $(patsubst %.c, %.o, $(src))
 
 #LIB = -ldl
@@ -8,6 +7,7 @@ CC = gcc
 
 CFLAGS = -pipe -Wall -O2 
 CFLAGS += -I./ 
+CFLAGS += -I./src/
 
 ifeq ($(shell arch), i686)
 	CFLAGS += -march=i686
