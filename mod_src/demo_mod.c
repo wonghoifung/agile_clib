@@ -14,21 +14,21 @@ void __signal__(void* instance, int signal);
 
 void* __create__(void)
 {
-	printf("%s called-----------\n", __FUNCTION__);
+	printf("%s called\n", __FUNCTION__);
 }
 
 int __init__(void* instance, const char* parm)
 {
-	printf("%s called===========\n", __FUNCTION__);
+	printf("%s called\n", __FUNCTION__);
 }
 
 void __release__(void* instance)
 {
-	printf("%s called+++++++++++\n", __FUNCTION__);
+	printf("%s called\n", __FUNCTION__);
 }
 
 void __signal__(void* instance, int signal)
 {
-	printf("%s called***********\n", __FUNCTION__);
+	printf("%s called\n", __FUNCTION__);
 }
 

@@ -11,7 +11,9 @@ void universal_signal_handler(int sig)
 	{
 		agile_dispose_module(&m);
 		m = agile_load_module("./mod/demo_mod.so");
+		return;
 	}
+	exit(0);
 }
 
 int main()
@@ -30,10 +32,6 @@ int main()
 	}
 	
 	agile_dispose_module(&m);
-
-#ifdef _WIN32
-	system("pause");
-#endif
 
     return 0;
 }
