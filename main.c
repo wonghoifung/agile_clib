@@ -1,14 +1,40 @@
 #include "agile_mem.h"
+#include "agile_module.h"
+#include "agile_signal.h"
 #include <stdio.h>
+#include <unistd.h>
+
+agile_module* m = NULL;
+void universal_signal_handler(int sig)
+{
+	if (sig == SIGUSR1)
+	{
+		agile_dispose_module(&m);
+		m = agile_load_module("./mod/demo_mod.so");
+	}
+}
 
 int main()
 {
-    char* s = (char*)agile_aligned_malloc(128, 32);
-    agile_aligned_free(s);
+	agile_signal_init();
 
-    int** arr = agile_alloc2d_int(10,20);
-    free(arr);
-    
+	m = agile_load_module("./mod/demo_mod.so");
+
+	while (1)
+	{
+		m->create();
+		m->init(NULL, NULL);
+		m->signal(NULL, 1);
+		m->release(NULL);
+		sleep(1);
+	}
+	
+	agile_dispose_module(&m);
+
+#ifdef _WIN32
+	system("pause");
+#endif
+
     return 0;
 }
 

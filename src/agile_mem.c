@@ -1,4 +1,9 @@
+//
+//  Created by huanghaifeng on 15-11-24.
+//  Copyright (c) 2015 wonghoifung. All rights reserved.
+//
 #include "agile_mem.h"
+#include <string.h>
 
 void* agile_aligned_malloc(size_t len, size_t align)
 {
@@ -33,4 +38,20 @@ int** agile_alloc2d_int(int rows, int cols)
     return rowptr;
 }
 
+char* agile_strclone(const char* str)
+{
+	size_t l = strlen(str);
+	char* s = malloc(l + 1);
+	memcpy(s, str, l + 1);
+	return s;
+}
 
+char* agile_strcombine(const char* str1, const char* str2)
+{
+	size_t l1 = strlen(str1);
+	size_t l2 = strlen(str2);
+	char* s = malloc(l1 + l2 + 1);
+	memcpy(s, str1, l1);
+	memcpy(s + l1, str2, l2 + 1);
+	return s;
+}
