@@ -12,6 +12,8 @@ typedef void (*dl_signal)(void* instance, int signal);
 
 typedef struct
 {
+	int objcnt;
+	int reloading;
 	char* pathname;
 	void* handle;
 	dl_create create;
@@ -21,7 +23,11 @@ typedef struct
 } agile_module;
 
 agile_module* agile_load_module(const char* pathname);
+void agile_reload_module(agile_module** pm);
 void agile_dispose_module(agile_module** m);
+
+void* create_mod_object(agile_module* m);
+void destroy_mod_object(agile_module* m, void* obj);
 
 #endif
 
