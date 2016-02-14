@@ -126,5 +126,12 @@ void test_agile_dlist() {
 
 	print_dlist(&list);
 
+	void* remdata;
+	agile_dlist_remove(&list,list.tail,&remdata);
+	printf("remove: %s\n",(char*)remdata);
+	free(remdata);
+
+	print_dlist(&list);
+
 	agile_dlist_destroy(&list);
 }
