@@ -94,5 +94,20 @@ void test_agile_clist() {
 	// 1 3 2
 	print_clist(&list);
 
+	char* data5 = get_data(5);
+	agile_clist_element* element = list.head->next;
+	agile_clist_ins_next(&list, element, data5);
+
+	// 1 3 5 2
+	print_clist(&list);
+
+	element = element->next->next;
+	agile_clist_rem_next(&list, element, &remdata);
+	printf("remove %s\n",(char*)remdata);
+	free(remdata);
+
+	// 3 5 2
+	print_clist(&list);
+
 	agile_clist_destroy(&list);
 }
