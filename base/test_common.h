@@ -2,12 +2,10 @@
 #define test_common_header
 
 #include <stdio.h>
+#include <string.h>
 
-static char* get_data(int i) {
-	char* data1 = (char*)malloc(32);
-	sprintf(data1, "helloworld%d", i);
-	return data1;
-}
+char* get_data(int i);
+int string_match(const void* data1, const void* data2);
 
 #endif
 

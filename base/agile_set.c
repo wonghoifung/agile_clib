@@ -105,11 +105,6 @@ int agile_set_is_equal(const agile_set* set1, const agile_set* set2) {
 
 #include "test_common.h"
 
-int data_match(const void* data1, const void* data2) {
-	if (strcmp((char*)data1, (char*)data2)==0) return 1;
-	return 0;
-}
-
 void print_set(agile_set* set, const char* tag) {
 	printf("set[%s]: ",tag);
 	agile_list_element* member;
@@ -121,8 +116,8 @@ void print_set(agile_set* set, const char* tag) {
 
 void test_agile_set() {
 	agile_set set1,set2;
-	agile_set_init(&set1,data_match,free);
-	agile_set_init(&set2,data_match,free);
+	agile_set_init(&set1,string_match,free);
+	agile_set_init(&set2,string_match,free);
 
 	char* data1_1 = get_data(1);
 	char* data2_1 = get_data(2);

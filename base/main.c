@@ -5,6 +5,7 @@
 #include "agile_stack.h"
 #include "agile_queue.h"
 #include "agile_set.h"
+#include "agile_chtbl.h"
 
 int main() {
 	//test_agile_list();
@@ -12,7 +13,8 @@ int main() {
 	//test_agile_clist();
 	//test_agile_stack();
 	//test_agile_queue();
-	test_agile_set();
+	//test_agile_set();
+	test_agile_chtbl();
 	return 0;
 }
 
