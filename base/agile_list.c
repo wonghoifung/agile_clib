@@ -4,7 +4,7 @@
 
 void agile_list_init(agile_list* list, void(*destroy)(void*)) {
 	list->size = 0;
-	//list->match = NULL;
+	list->match = NULL;
 	list->destroy = destroy;
 	list->head = NULL;
 	list->tail = NULL;

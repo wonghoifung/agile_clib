@@ -10,7 +10,7 @@ typedef struct agile_list_element_ {
 
 typedef struct agile_list_ {
 	int size;
-	//int (*match)(const void* key1, const void* key2);
+	int (*match)(const void* key1, const void* key2);
 	void (*destroy)(void* data);
 	agile_list_element* head;
 	agile_list_element* tail;
