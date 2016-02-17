@@ -7,6 +7,7 @@
 #include "agile_set.h"
 #include "agile_chtbl.h"
 #include "agile_ohtbl.h"
+#include "agile_bitree.h"
 
 int main() {
 	//test_agile_list();
@@ -16,7 +17,8 @@ int main() {
 	//test_agile_queue();
 	//test_agile_set();
 	//test_agile_chtbl();
-	test_agile_ohtbl();
+	//test_agile_ohtbl();
+	test_agile_bitree();
 	return 0;
 }
 
