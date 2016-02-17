@@ -79,7 +79,7 @@ int agile_list_rem_next(agile_list* list, agile_list_element* element, void** da
 
 #include "test_common.h"
 
-static void print_list(agile_list* list) {
+void print_list(agile_list* list) {
 	agile_list_element* elm = agile_list_head(list);
 	printf("list: ");
 	while (elm != NULL) {

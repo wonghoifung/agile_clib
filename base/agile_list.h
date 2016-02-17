@@ -29,6 +29,7 @@ int agile_list_rem_next(agile_list* list, agile_list_element* element, void** da
 #define agile_list_data(element) ((element)->data)
 #define agile_list_next(element) ((element)->next)
 
+void print_list(agile_list* list);
 void test_agile_list();
 
 #endif

@@ -2,6 +2,7 @@
 #define agile_bitree_header
 
 #include <stdlib.h>
+#include "agile_list.h"
 
 typedef struct agile_bitree_node_ {
 	void* data;
@@ -31,6 +32,10 @@ int agile_bitree_merge(agile_bitree* merge, agile_bitree* left, agile_bitree* ri
 #define agile_bitree_data(node) ((node)->data)
 #define agile_bitree_left(node) ((node)->left)
 #define agile_bitree_right(node) ((node)->right)
+
+int agile_preorder(const agile_bitree_node* node, agile_list* list);
+int agile_inorder(const agile_bitree_node* node, agile_list* list);
+int agile_postorder(const agile_bitree_node* node, agile_list* list);
 
 void test_agile_bitree();
 

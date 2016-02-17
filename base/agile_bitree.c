@@ -104,12 +104,71 @@ int agile_bitree_merge(agile_bitree* merge, agile_bitree* left, agile_bitree* ri
 	return 0;
 }
 
+int agile_preorder(const agile_bitree_node* node, agile_list* list) {
+	if (!agile_bitree_is_eob(node)) {
+		if (agile_list_ins_next(list, agile_list_tail(list), agile_bitree_data(node))!=0) {
+			return -1;
+		}
+		if (!agile_bitree_is_eob(agile_bitree_left(node))) {
+			if (agile_preorder(agile_bitree_left(node),list)!=0) {
+				return -1;
+			}
+		}
+		if (!agile_bitree_is_eob(agile_bitree_right(node))!=0) {
+			if (agile_preorder(agile_bitree_right(node),list)!=0) {
+				return -1;
+			}
+		}
+	}
+	return 0;
+}
+
+int agile_inorder(const agile_bitree_node* node, agile_list* list) {
+	if (!agile_bitree_is_eob(node)) {
+		if (!agile_bitree_is_eob(agile_bitree_left(node))) {
+			if (agile_inorder(agile_bitree_left(node),list)!=0) {
+				return -1;
+			}
+		}
+		if (agile_list_ins_next(list, agile_list_tail(list), agile_bitree_data(node))!=0) {
+			return -1;
+		}
+		if (!agile_bitree_is_eob(agile_bitree_right(node))!=0) {
+			if (agile_inorder(agile_bitree_right(node),list)!=0) {
+				return -1;
+			}
+		}
+	}
+	return 0;
+}
+
+int agile_postorder(const agile_bitree_node* node, agile_list* list) {
+	if (!agile_bitree_is_eob(node)) {
+		if (!agile_bitree_is_eob(agile_bitree_left(node))) {
+			if (agile_postorder(agile_bitree_left(node),list)!=0) {
+				return -1;
+			}
+		}
+		
+		if (!agile_bitree_is_eob(agile_bitree_right(node))!=0) {
+			if (agile_postorder(agile_bitree_right(node),list)!=0) {
+				return -1;
+			}
+		}
+
+		if (agile_list_ins_next(list, agile_list_tail(list), agile_bitree_data(node))!=0) {
+			return -1;
+		}
+	}
+	return 0;
+}
+
 //////////////////////////////
 
 #include "test_common.h"
 #include "agile_queue.h"
 
-void print_bitree(agile_bitree* tree) {
+static void print_bitree(agile_bitree* tree) {
 	agile_bitree_node* node = tree->root;
 	agile_queue queue;
 	agile_queue_init(&queue, NULL);
@@ -144,6 +203,13 @@ void test_agile_bitree() {
 	agile_bitree_ins_left(&tree, agile_bitree_root(&tree), d2);
 	agile_bitree_ins_right(&tree, agile_bitree_root(&tree), d3);
 	agile_bitree_ins_left(&tree, agile_bitree_root(&tree)->left, d4);
+	{
+		agile_list list;
+		agile_list_init(&list,NULL);
+		agile_preorder(agile_bitree_root(&tree),&list);
+		print_list(&list);
+		agile_list_destroy(&list);
+	}
 	print_bitree(&tree);
 	printf("\n");
 	agile_bitree_rem_left(&tree, agile_bitree_root(&tree));
