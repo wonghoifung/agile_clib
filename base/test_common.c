@@ -11,3 +11,7 @@ int string_match(const void* data1, const void* data2) {
 	if (strcmp((char*)data1, (char*)data2)==0) return 1;
 	return 0;
 }
+
+int string_compare(const void* data1, const void* data2) {
+	return strcmp((char*)data1, (char*)data2);
+}

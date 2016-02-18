@@ -85,7 +85,7 @@ static void rotate_right(agile_bitree_node** node) {
 static void destroy_left(agile_avltree* tree, agile_bitree_node* node) {
 	agile_bitree_node** position;
 	if (agile_bitree_size(tree)==0) return;
-	if (node = NULL) position = &tree->root;
+	if (node == NULL) position = &tree->root;
 	else position = &node->left;
 	if (*position != NULL) {
 		destroy_left(tree, *position);
@@ -103,7 +103,7 @@ static void destroy_left(agile_avltree* tree, agile_bitree_node* node) {
 static void destroy_right(agile_avltree* tree, agile_bitree_node* node) {
 	agile_bitree_node** position;
 	if (agile_bitree_size(tree)==0) return;
-	if (node = NULL) position = &tree->root;
+	if (node == NULL) position = &tree->root;
 	else position = &node->right;
 	if (*position != NULL) {
 		destroy_left(tree, *position);
@@ -221,7 +221,18 @@ static int hide(agile_avltree* tree, agile_bitree_node* node, const void* data) 
 
 static int lookup(agile_avltree* tree, agile_bitree_node* node, void** data) {
 	int cmpval, retval;
-
+	if (agile_bitree_is_eob(node)) return -1;
+	cmpval = tree->compare(*data, ((agile_avltree_node*)agile_bitree_data(node))->data);
+	if (cmpval < 0) {
+		retval = lookup(tree, agile_bitree_left(node), data);
+	} else if (cmpval > 0) {
+		retval = lookup(tree, agile_bitree_right(node), data);
+	} else {
+		if (!((agile_avltree_node*)agile_bitree_data(node))->hidden) {
+			*data = ((agile_avltree_node*)agile_bitree_data(node))->data;
+			retval = 0;
+		} else return -1;
+	}
 	return retval;
 }
 
@@ -252,6 +263,45 @@ int agile_avltree_lookup(agile_avltree* tree, void** data) {
 
 #include "test_common.h"
 
-void test_agile_avltree() {
+static void print_avl_list(agile_list* list) {
+	agile_list_element* elm = agile_list_head(list);
+	printf("list: ");
+	while (elm != NULL) {
+		printf("%s ", (char*)(((agile_avltree_node*)agile_list_data(elm))->data));
+		elm = agile_list_next(elm);
+	}
+	printf("\n");
+}
 
+void test_agile_avltree() {
+	agile_avltree tree;
+	agile_avltree_init(&tree, string_compare, free);
+
+	char* d1 = get_data(1);
+	char* d2 = get_data(2);
+	char* d3 = get_data(3);
+
+	agile_avltree_insert(&tree, (void*)d1);
+	agile_avltree_insert(&tree, (void*)d2);
+	agile_avltree_insert(&tree, (void*)d3);
+
+	{
+		agile_list list;
+		agile_list_init(&list,NULL);
+		agile_preorder(agile_bitree_root(&tree),&list);
+		print_avl_list(&list);
+		agile_list_destroy(&list);
+	}
+
+	agile_avltree_remove(&tree, (void*)d2);
+
+	{
+		agile_list list;
+		agile_list_init(&list,NULL);
+		agile_preorder(agile_bitree_root(&tree),&list);
+		print_avl_list(&list);
+		agile_list_destroy(&list);
+	}
+
+	agile_avltree_destroy(&tree);
 }
