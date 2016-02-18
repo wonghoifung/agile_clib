@@ -83,11 +83,39 @@ static void rotate_right(agile_bitree_node** node) {
 }
 
 static void destroy_left(agile_avltree* tree, agile_bitree_node* node) {
-
+	agile_bitree_node** position;
+	if (agile_bitree_size(tree)==0) return;
+	if (node = NULL) position = &tree->root;
+	else position = &node->left;
+	if (*position != NULL) {
+		destroy_left(tree, *position);
+		destroy_right(tree, *position);
+		if (tree->destroy != NULL) {
+			tree->destroy(((agile_avltree_node*)(*position)->data)->data); // user data
+		}
+		free((*position)->data); // avl node
+		free(*position); // bitree node
+		*position = NULL;
+		tree->size -= 1;
+	}
 }
 
 static void destroy_right(agile_avltree* tree, agile_bitree_node* node) {
-
+	agile_bitree_node** position;
+	if (agile_bitree_size(tree)==0) return;
+	if (node = NULL) position = &tree->root;
+	else position = &node->right;
+	if (*position != NULL) {
+		destroy_left(tree, *position);
+		destroy_right(tree, *position);
+		if (tree->destroy != NULL) {
+			tree->destroy(((agile_avltree_node*)(*position)->data)->data); // user data
+		}
+		free((*position)->data); // avl node
+		free(*position); // bitree node
+		*position = NULL;
+		tree->size -= 1;
+	}
 }
 
 static int insert(agile_avltree* tree, agile_bitree_node** node, const void* data, int* balanced) {
