@@ -1,14 +1,85 @@
 #include <string.h>
+#include <assert.h>
 #include "agile_avltree.h"
 
 static void destroy_right(agile_avltree* tree, agile_bitree_node* node);
 
 static void rotate_left(agile_bitree_node** node) {
-
+	agile_bitree_node* left;
+	agile_bitree_node* grandchild;
+	left = agile_bitree_left(*node);
+	if (((agile_avltree_node*)agile_bitree_data(left))->factor == AVL_LFT_HEAVY) {
+		// LL rotation
+		agile_bitree_left(*node) = agile_bitree_right(left);
+		agile_bitree_right(left) = *node;
+		((agile_avltree_node*)agile_bitree_data(*node))->factor = AVL_BALANCED;
+		((agile_avltree_node*)agile_bitree_data(left))->factor = AVL_BALANCED;
+		*node = left;
+	} else {
+		// LR rotation
+		grandchild = agile_bitree_right(left);
+		agile_bitree_right(left) = agile_bitree_left(grandchild);
+		agile_bitree_left(grandchild) = left;
+		agile_bitree_left(*node) = agile_bitree_right(grandchild);
+		agile_bitree_right(grandchild) = *node;
+		switch (((agile_avltree_node*)agile_bitree_data(grandchild))->factor) {
+			case AVL_LFT_HEAVY:
+				((agile_avltree_node*)agile_bitree_data(*node))->factor = AVL_RGT_HEAVY;
+				((agile_avltree_node*)agile_bitree_data(left))->factor = AVL_BALANCED;
+				break;
+			case AVL_BALANCED:
+				((agile_avltree_node*)agile_bitree_data(*node))->factor = AVL_BALANCED;
+				((agile_avltree_node*)agile_bitree_data(left))->factor = AVL_BALANCED;
+				break;
+			case AVL_RGT_HEAVY:
+				((agile_avltree_node*)agile_bitree_data(*node))->factor = AVL_BALANCED;
+				((agile_avltree_node*)agile_bitree_data(left))->factor = AVL_LFT_HEAVY;
+				break;
+			default:
+				assert(0);
+		}
+		((agile_avltree_node*)agile_bitree_data(grandchild))->factor = AVL_BALANCED;
+		*node = grandchild;
+	}
 }
 
 static void rotate_right(agile_bitree_node** node) {
-
+	agile_bitree_node* right;
+	agile_bitree_node* grandchild;
+	right = agile_bitree_right(*node);
+	if (((agile_avltree_node*)agile_bitree_data(right))->factor==AVL_RGT_HEAVY) {
+		// RR rotation
+		agile_bitree_right(*node) = agile_bitree_left(right);
+		agile_bitree_left(right) = *node;
+		((agile_avltree_node*)agile_bitree_data(*node))->factor = AVL_BALANCED;
+		((agile_avltree_node*)agile_bitree_data(right))->factor = AVL_BALANCED;
+		*node = right;
+	} else {
+		// RL rotation
+		grandchild = agile_bitree_left(right);
+		agile_bitree_left(right) = agile_bitree_right(grandchild);
+		agile_bitree_right(grandchild) = right;
+		agile_bitree_right(*node) = agile_bitree_left(grandchild);
+		agile_bitree_left(grandchild) = *node;
+		switch (((agile_avltree_node*)agile_bitree_data(grandchild))->factor) {
+			case AVL_LFT_HEAVY:
+				((agile_avltree_node*)agile_bitree_data(*node))->factor = AVL_BALANCED;
+				((agile_avltree_node*)agile_bitree_data(right))->factor = AVL_RGT_HEAVY;
+				break;
+			case AVL_BALANCED:
+				((agile_avltree_node*)agile_bitree_data(*node))->factor = AVL_BALANCED;
+				((agile_avltree_node*)agile_bitree_data(right))->factor = AVL_BALANCED;
+				break;
+			case AVL_RGT_HEAVY:
+				((agile_avltree_node*)agile_bitree_data(*node))->factor = AVL_LFT_HEAVY;
+				((agile_avltree_node*)agile_bitree_data(right))->factor = AVL_BALANCED;
+				break;
+			default:
+				assert(0);
+		}
+		((agile_avltree_node*)agile_bitree_data(grandchild))->factor = AVL_BALANCED;
+		*node = grandchild;
+	}
 }
 
 static void destroy_left(agile_avltree* tree, agile_bitree_node* node) {
