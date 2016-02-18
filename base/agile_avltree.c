@@ -119,13 +119,103 @@ static void destroy_right(agile_avltree* tree, agile_bitree_node* node) {
 }
 
 static int insert(agile_avltree* tree, agile_bitree_node** node, const void* data, int* balanced) {
-
+	agile_avltree_node* avl_data;
+	int cmpval, retval;
+	if (agile_bitree_is_eob(*node)) {
+		// empty tree
+		if ((avl_data=(agile_avltree_node*)malloc(sizeof(agile_avltree_node)))==NULL) return -1;
+		avl_data->factor = AVL_BALANCED;
+		avl_data->hidden = 0;
+		avl_data->data = (void*)data;
+		return agile_bitree_ins_left(tree, *node, avl_data);
+	} else {
+		cmpval = tree->compare(data, ((agile_avltree_node*)agile_bitree_data(*node))->data);
+		if (cmpval < 0) {
+			// move to left
+			if (agile_bitree_is_eob(agile_bitree_left(*node))) {
+				if ((avl_data=(agile_avltree_node*)malloc(sizeof(agile_avltree_node)))==NULL) return -1;
+				avl_data->factor = AVL_BALANCED;
+				avl_data->hidden = 0;
+				avl_data->data = (void*)data;
+				if (agile_bitree_ins_left(tree, *node, avl_data)!=0) return -1;
+				*balanced = 0;
+			} else {
+				if ((retval = insert(tree, &agile_bitree_left(*node), data, balanced))!=0) return retval;
+			}
+			if (0==*balanced) {
+				switch (((agile_avltree_node*)agile_bitree_data(*node))->factor) {
+					case AVL_LFT_HEAVY:
+						rotate_left(node);
+						*balanced = 1;
+						break;
+					case AVL_BALANCED:
+						((agile_avltree_node*)agile_bitree_data(*node))->factor = AVL_LFT_HEAVY;
+						break;
+					case AVL_RGT_HEAVY:
+						((agile_avltree_node*)agile_bitree_data(*node))->factor = AVL_BALANCED;
+						*balanced = 1;
+						break;
+					default:
+						assert(0);
+				}
+			}
+		} else if (cmpval > 0) {
+			// move to right
+			if (agile_bitree_is_eob(agile_bitree_right(*node))) {
+				if ((avl_data=(agile_avltree_node*)malloc(sizeof(agile_avltree_node)))==NULL) return -1;
+				avl_data->factor = AVL_BALANCED;
+				avl_data->hidden = 0;
+				avl_data->data = (void*)data;
+				if (agile_bitree_ins_right(tree, *node, avl_data)!=0) return -1;
+				*balanced = 0;
+			} else {
+				if ((retval = insert(tree, &agile_bitree_right(*node), data, balanced))!=0) return retval;
+			}
+			if (0==*balanced) {
+				switch (((agile_avltree_node*)agile_bitree_data(*node))->factor) {
+					case AVL_LFT_HEAVY:
+						((agile_avltree_node*)agile_bitree_data(*node))->factor = AVL_BALANCED;
+						*balanced = 1;
+						break;
+					case AVL_BALANCED:
+						((agile_avltree_node*)agile_bitree_data(*node))->factor = AVL_RGT_HEAVY;
+						break;
+					case AVL_RGT_HEAVY:
+						rotate_right(node);
+						*balanced = 1;
+						break;
+					default:
+						assert(0);
+				}
+			}
+		} else {
+			// same data
+			if (!((agile_avltree_node*)agile_bitree_data(*node))->hidden) return 1;
+			else {
+				if (tree->destroy != NULL) {
+					tree->destroy(((agile_avltree_node*)agile_bitree_data(*node))->data);
+				}
+				((agile_avltree_node*)agile_bitree_data(*node))->data = (void*)data;
+				((agile_avltree_node*)agile_bitree_data(*node))->hidden = 0;
+				*balanced = 1;
+			}
+		}
+	}
 	return 0;
 }
 
 static int hide(agile_avltree* tree, agile_bitree_node* node, const void* data) {
 	int cmpval, retval;
-
+	if (agile_bitree_is_eob(node)) return -1;
+	cmpval = tree->compare(data, ((agile_avltree_node*)agile_bitree_data(node))->data);
+	if (cmpval < 0) {
+		retval = hide(tree, agile_bitree_left(node), data);
+	} else if (cmpval > 0) {
+		retval = hide(tree, agile_bitree_right(node), data);
+	} else {
+		((agile_avltree_node*)agile_bitree_data(node))->hidden = 1;
+		retval = 0;
+	}
 	return retval;
 }
 
