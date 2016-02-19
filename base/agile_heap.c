@@ -25,7 +25,24 @@ void agile_heap_destroy(agile_heap* heap) {
 }
 
 int agile_heap_insert(agile_heap* heap, const void* data) {
+	void* temp;
+	int ipos;
+	int ppos;
+	if ((temp=(void**)realloc(heap->tree, (agile_heap_size(heap)+1)*sizeof(void*)))==NULL) return -1;
+	heap->tree = temp;
+	heap->tree[agile_heap_size(heap)] = (void*)data;
+	ipos = agile_heap_size(heap);
+	ppos = heap_parent(ipos);
+	while (ipos > 0 && heap->compare(heap->tree[ppos],heap->tree[ipos]) < 0) {
+		temp = heap->tree[ppos];
+		heap->tree[ppos] = heap->tree[ipos];
+		heap->tree[ipos] = temp;
 
+		ipos = ppos;
+		ppos = heap_parent(ipos);
+	}
+	heap->size += 1;
+	return 0;
 }
 
 int agile_heap_extract(agile_heap* heap, void** data) {
