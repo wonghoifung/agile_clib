@@ -10,6 +10,7 @@
 #include "agile_bitree.h"
 #include "agile_avltree.h"
 #include "agile_heap.h"
+#include "agile_pqueue.h"
 
 int main() {
 	//test_agile_list();
@@ -22,7 +23,8 @@ int main() {
 	//test_agile_ohtbl();
 	//test_agile_bitree();
 	//test_agile_avltree();
-	test_agile_heap();
+	//test_agile_heap();
+	test_agile_pqueue();
 	return 0;
 }
 
