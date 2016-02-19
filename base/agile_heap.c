@@ -98,6 +98,27 @@ int agile_heap_extract(agile_heap* heap, void** data) {
 void test_agile_heap() {
 	agile_heap heap;
 	agile_heap_init(&heap, string_compare, free);
-
+	char* d1 = get_data(1);
+	char* d2 = get_data(2);
+	char* d3 = get_data(3);
+	char* d4 = get_data(4);
+	agile_heap_insert(&heap, (void*)d2);
+	agile_heap_insert(&heap, (void*)d4);
+	agile_heap_insert(&heap, (void*)d3);
+	agile_heap_insert(&heap, (void*)d1);
+	void* md = NULL;
+	agile_heap_extract(&heap, &md);
+	printf("%s\n", (char*)md);
+	free(md); md = NULL;
+	agile_heap_extract(&heap, &md);
+	printf("%s\n", (char*)md);
+	free(md); md = NULL;
+	agile_heap_extract(&heap, &md);
+	printf("%s\n", (char*)md);
+	free(md); md = NULL;
+	agile_heap_extract(&heap, &md);
+	printf("%s\n", (char*)md);
+	free(md); md = NULL;
+	printf("%d\n", agile_heap_extract(&heap, &md));
 	agile_heap_destroy(&heap);
 }
