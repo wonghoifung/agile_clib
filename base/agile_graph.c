@@ -59,7 +59,29 @@ int agile_graph_ins_edge(agile_graph* graph, const void* data1, const void* data
 }
 
 int agile_graph_rem_vertex(agile_graph* graph, void** data) {
-
+	agile_list_element* element;
+	agile_list_element* temp;
+	agile_list_element* prev;
+	agile_adj_list* adjlist;
+	int found;
+	prev = NULL;
+	found = 0;
+	for (element=agile_list_head(&graph->adjlists); element!=NULL; element=agile_list_next(element)) {
+		// should remove edge before vertex
+		if (agile_set_is_member(&((agile_adj_list*)agile_list_data(element))->adjacent, *data)) return -1;
+		if (graph->match(*data, ((agile_adj_list*)agile_list_data(element))->vertex)) {
+			temp = element;
+			found = 1;
+		}
+		if (!found) prev = element;
+	}
+	if (!found) return -1;
+	if (agile_set_size(&((agile_adj_list*)agile_list_data(element))->adjacent) > 0) return -1;
+	if (agile_list_rem_next(&graph->adjlists, prev, (void**)&adjlist) != 0) return -1;
+	*data = adjlist->vertex;
+	free(adjlist);
+	graph->vcount -= 1;
+	return 0;
 }
 
 int agile_graph_rem_edge(agile_graph* graph, void** data1, void** data2) {
