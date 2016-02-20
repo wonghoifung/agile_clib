@@ -96,7 +96,16 @@ int agile_graph_rem_edge(agile_graph* graph, void** data1, void** data2) {
 }
 
 int agile_graph_adjlist(const agile_graph* graph, const void* data, agile_adj_list** adjlist) {
-
+	agile_list_element* element;
+	//agile_list_element* prev;
+	//prev = NULL;
+	for (element=agile_list_head(&graph->adjlists); element!=NULL; element=agile_list_next(element)) {
+		if (graph->match(data, ((agile_adj_list*)agile_list_data(element))->vertex)) break;
+		//prev = element;
+	}
+	if (element==NULL) return -1;
+	*adjlist = agile_list_data(element);
+	return 0;
 }
 
 int agile_graph_is_adjacent(const agile_graph* graph, const void* data1, const void* data2) {
