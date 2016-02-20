@@ -23,7 +23,20 @@ void agile_graph_destroy(agile_graph* graph) {
 }
 
 int agile_graph_ins_vertex(agile_graph* graph, const void* data) {
-
+	agile_list_element* element;
+	agile_adj_list* adjlist;
+	int retval;
+	for (element = agile_list_head(&graph->adjlists); element!=NULL; element=agile_list_next(element)) {
+		if (graph->match(data, ((agile_adj_list*)agile_list_data(element))->vertex)) return 1;
+	}
+	if ((adjlist = (agile_adj_list*)malloc(sizeof(agile_adj_list))) == NULL) return -1;
+	adjlist->vertex = (void*)data;
+	agile_set_init(&adjlist->adjacent, graph->match, NULL);
+	if ((retval = agile_list_ins_next(&graph->adjlists, agile_list_tail(&graph->adjlists), adjlist)) != 0) {
+		return retval;
+	}
+	graph->vcount += 1;
+	return 0;
 }
 
 int agile_graph_ins_edge(agile_graph* graph, const void* data1, const void* data2) {
