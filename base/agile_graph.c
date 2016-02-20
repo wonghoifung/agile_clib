@@ -46,7 +46,9 @@ int agile_graph_ins_edge(agile_graph* graph, const void* data1, const void* data
 	for (element=agile_list_head(&graph->adjlists); element!=NULL; element=agile_list_next(element)) {
 		if (graph->match(data2, ((agile_adj_list*)agile_list_data(element))->vertex)) break;
 	}
-	if (element==NULL) return -1;
+	if (element==NULL) {
+		return -1;
+	}
 	for (element=agile_list_head(&graph->adjlists); element!=NULL; element=agile_list_next(element)) {
 		if (graph->match(data1, ((agile_adj_list*)agile_list_data(element))->vertex)) break;
 	}
@@ -108,13 +110,14 @@ int agile_graph_adjlist(const agile_graph* graph, const void* data, agile_adj_li
 	return 0;
 }
 
+// is data2 in data1's adjacent list
 int agile_graph_is_adjacent(const agile_graph* graph, const void* data1, const void* data2) {
 	agile_list_element* element;
-	agile_list_element* prev;
-	prev = NULL;
+	//agile_list_element* prev;
+	//prev = NULL;
 	for (element=agile_list_head(&graph->adjlists); element!=NULL; element=agile_list_next(element)) {
 		if (graph->match(data1, ((agile_adj_list*)agile_list_data(element))->vertex)) break;
-		prev = element;
+		//prev = element;
 	}
 	if (element==NULL) return 0;
 	return agile_set_is_member(&((agile_adj_list*)agile_list_data(element))->adjacent, data2);
@@ -125,5 +128,37 @@ int agile_graph_is_adjacent(const agile_graph* graph, const void* data1, const v
 #include "test_common.h"
 
 void test_agile_graph() {
+	int retval;
 
+	agile_graph graph;
+	agile_graph_init(&graph, string_match, free);
+
+	char* d1 = get_data(1);
+	char* d2 = get_data(2);
+	char* d3 = get_data(3);
+	char* d4 = get_data(4);
+
+	retval = agile_graph_ins_vertex(&graph, (void*)d1); printf("insert vertex: %d\n", retval);
+	retval = agile_graph_ins_vertex(&graph, (void*)d2); printf("insert vertex: %d\n", retval);
+	retval = agile_graph_ins_vertex(&graph, (void*)d3); printf("insert vertex: %d\n", retval);
+	retval = agile_graph_ins_vertex(&graph, (void*)d4); printf("insert vertex: %d\n", retval);
+
+	retval = agile_graph_ins_edge(&graph, (void*)d1, (void*)d2); printf("insert edge: %d\n", retval);
+	retval = agile_graph_ins_edge(&graph, (void*)d1, (void*)d3); printf("insert edge: %d\n", retval);
+	retval = agile_graph_ins_edge(&graph, (void*)d1, (void*)d4); printf("insert edge: %d\n", retval);
+
+	retval = agile_graph_ins_edge(&graph, (void*)d2, (void*)d3); printf("insert edge: %d\n", retval);
+	retval = agile_graph_ins_edge(&graph, (void*)d2, (void*)d4); printf("insert edge: %d\n", retval);
+
+	retval = agile_graph_ins_edge(&graph, (void*)d4, (void*)d3); printf("insert edge: %d\n", retval);
+
+	printf("1->2: %d\n", agile_graph_is_adjacent(&graph, (void*)d1, (void*)d2));
+	printf("1->3: %d\n", agile_graph_is_adjacent(&graph, (void*)d1, (void*)d3));
+	printf("1->4: %d\n", agile_graph_is_adjacent(&graph, (void*)d1, (void*)d4));
+
+	printf("2->1: %d\n", agile_graph_is_adjacent(&graph, (void*)d2, (void*)d1));
+	printf("3->1: %d\n", agile_graph_is_adjacent(&graph, (void*)d3, (void*)d1));
+	printf("4->1: %d\n", agile_graph_is_adjacent(&graph, (void*)d4, (void*)d1));
+
+	agile_graph_destroy(&graph);
 }
