@@ -85,7 +85,14 @@ int agile_graph_rem_vertex(agile_graph* graph, void** data) {
 }
 
 int agile_graph_rem_edge(agile_graph* graph, void** data1, void** data2) {
-
+	agile_list_element* element;
+	for (element=agile_list_head(&graph->adjlists); element!=NULL; element=agile_list_next(element)) {
+		if (graph->match(data1, ((agile_adj_list*)agile_list_data(element))->vertex)) break;
+	}
+	if (element==NULL) return -1;
+	if (agile_set_remove(&((agile_adj_list*)agile_list_data(element))->adjacent, data2) != 0) return -1;
+	graph->ecount -= 1;
+	return 0;
 }
 
 int agile_graph_adjlist(const agile_graph* graph, const void* data, agile_adj_list** adjlist) {
