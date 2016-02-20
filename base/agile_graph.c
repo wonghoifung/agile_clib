@@ -109,7 +109,15 @@ int agile_graph_adjlist(const agile_graph* graph, const void* data, agile_adj_li
 }
 
 int agile_graph_is_adjacent(const agile_graph* graph, const void* data1, const void* data2) {
-
+	agile_list_element* element;
+	agile_list_element* prev;
+	prev = NULL;
+	for (element=agile_list_head(&graph->adjlists); element!=NULL; element=agile_list_next(element)) {
+		if (graph->match(data1, ((agile_adj_list*)agile_list_data(element))->vertex)) break;
+		prev = element;
+	}
+	if (element==NULL) return 0;
+	return agile_set_is_member(&((agile_adj_list*)agile_list_data(element))->adjacent, data2);
 }
 
 //////////////////////////////
