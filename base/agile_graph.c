@@ -39,8 +39,23 @@ int agile_graph_ins_vertex(agile_graph* graph, const void* data) {
 	return 0;
 }
 
+// insert data2 into data1's adjacent
 int agile_graph_ins_edge(agile_graph* graph, const void* data1, const void* data2) {
-
+	agile_list_element* element;
+	int retval;
+	for (element=agile_list_head(&graph->adjlists); element!=NULL; element=agile_list_next(element)) {
+		if (graph->match(data2, ((agile_adj_list*)agile_list_data(element))->vertex)) break;
+	}
+	if (element==NULL) return -1;
+	for (element=agile_list_head(&graph->adjlists); element!=NULL; element=agile_list_next(element)) {
+		if (graph->match(data1, ((agile_adj_list*)agile_list_data(element))->vertex)) break;
+	}
+	if (element==NULL) return -1;
+	if ((retval = agile_set_insert(&((agile_adj_list*)agile_list_data(element))->adjacent, data2)) != 0) {
+		return retval;
+	}
+	graph->ecount += 1;
+	return 0;
 }
 
 int agile_graph_rem_vertex(agile_graph* graph, void** data) {
