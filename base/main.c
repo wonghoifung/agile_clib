@@ -11,6 +11,7 @@
 #include "agile_avltree.h"
 #include "agile_heap.h"
 #include "agile_pqueue.h"
+#include "agile_graph.h"
 
 int main() {
 	//test_agile_list();
@@ -24,7 +25,8 @@ int main() {
 	//test_agile_bitree();
 	//test_agile_avltree();
 	//test_agile_heap();
-	test_agile_pqueue();
+	//test_agile_pqueue();
+	test_agile_graph();
 	return 0;
 }
 
