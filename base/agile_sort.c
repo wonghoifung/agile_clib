@@ -173,6 +173,22 @@ int rxsort(int* data, int size, int p, int k) {
 	return 0;
 }
 
+int bisearch(void* sorted, const void* target, int size, int esize, int(*compare)(const void*,const void*)) {
+	int left, middle, right;
+	left = 0;
+	right = size - 1;
+	while (left <= right) {
+		middle = (left + right) / 2;
+		switch (compare(((char*)sorted + (esize * middle)), target)) {
+			case -1: left = middle + 1; break;
+			case 1: right = middle - 1; break;
+			case 0: return middle;
+			// no default
+		}
+	}
+	return -1;
+}
+
 //////////////////////////////
 
 //#include "test_common.h"
@@ -187,8 +203,12 @@ void test_agile_sort() {
 	//res = issort(arr,size,esize,compare_int);
 	//res = qksort(arr, size, esize, 0, size-1, compare_int);
 	//res = mgsort(arr, size, esize, 0, size-1, compare_int);
-	//res = ctsort(arr, size, 10); (void)esize;
-	res = rxsort(arr, size, 1, 10); (void)esize;
+	//res = ctsort(arr, size, 10); 
+	res = rxsort(arr, size, 1, 10); 
 	printf("res: %d\n", res);
 	dump_int_data(arr, size);
+
+	int target = 5;
+	res = bisearch(arr, &target, size, esize, compare_int);
+	if (res != -1) printf("found 5 at %d\n", res);
 }
