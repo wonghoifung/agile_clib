@@ -13,6 +13,7 @@
 #include "agile_pqueue.h"
 #include "agile_graph.h"
 #include "agile_sort.h"
+#include "agile_nummeths.h"
 
 int main() {
 	//test_agile_list();
@@ -28,7 +29,8 @@ int main() {
 	//test_agile_heap();
 	//test_agile_pqueue();
 	//test_agile_graph();
-	test_agile_sort();
+	//test_agile_sort();
+	test_agile_nummeths();
 	return 0;
 }
 
