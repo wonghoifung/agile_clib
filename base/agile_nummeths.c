@@ -54,9 +54,32 @@ void lsqe(const double* x, const double* y, int n, double* b1, double* b0) {
 	*b0 = (sumy - (*b1 * sumx)) / (double)n;
 }
 
+int root(double(*f)(double), double(*g)(double), double* x, int* n, double delta) {
+	int satisfied, i;
+	i = 0;
+	satisfied = 0;
+	while (!satisfied && i+1<*n) {
+		x[i+1] = x[i] - (f(x[i]) / g(x[i]));
+		if (fabs(x[i+1]-x[i]) < delta) satisfied = 1;
+		i += 1;
+	}
+	if (i==0) *n = 1;
+	else *n = i + 1;
+	if (satisfied) return 0;
+	else return -1;
+}
+
 //////////////////////////////
 
 #include <stdio.h>
+
+static double f(double d) {
+	return pow(d,3.0) - pow(d,2.0) - 3.0 * d + 1.8;
+}
+
+static double g(double d) {
+	return 3.0 * pow(d,2.0) - 2.0 * d - 3.0;
+}
 
 void test_agile_nummeths() {
 	double x[4] = {-3.0, -2.0, 2.0, 3.0};
@@ -72,4 +95,10 @@ void test_agile_nummeths() {
 	double b1,b0;
 	lsqe(xi, yi, 9, &b1, &b0);
 	printf("%.4f %.4f\n", b1, b0);
+
+	double xx1[5] = {-2, -1};
+	int n = 5;
+	root(f, g, xx1, &n, 0.001);
+	for (int i=0; i<5; ++i) printf("%.5f ",xx1[i]);
+	printf("\n");
 }
