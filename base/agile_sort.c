@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 #include "agile_sort.h"
 
 int issort(void* data, int size, int esize, int(*compare)(const void*,const void*)) {
@@ -125,20 +126,69 @@ int mgsort(void* data, int size, int esize, int i, int k, int(*compare)(const vo
 	return 0;
 }
 
+// k is the biggest element among data plus 1
+int ctsort(int* data, int size, int k) {
+	int* counts;
+	int* temp;
+	int i,j;
+	if ((counts=(int*)malloc(k*sizeof(int)))==NULL) return -1;
+	if ((temp=(int*)malloc(size*sizeof(int)))==NULL) return -1;
+	for (i=0; i<k; ++i) counts[i] = 0;
+	for (j=0; j<size; ++j) counts[data[j]] = counts[data[j]] + 1;
+	for (i=1; i<k; ++i) counts[i] += counts[i-1];
+	for (j=size-1; j>=0; --j) {
+		temp[counts[data[j]]-1] = data[j];
+		counts[data[j]] -= 1;
+	}
+	memcpy(data, temp, size * sizeof(int));
+	free(counts);
+	free(temp);
+	return 0;
+}
+
+// k(base) is for ctsort
+int rxsort(int* data, int size, int p, int k) {
+	int* counts;
+	int* temp;
+	int index, pval, i, j, n;
+	if ((counts=(int*)malloc(k * sizeof(int))) == NULL) return -1;
+	if ((temp=(int*)malloc(size * sizeof(int))) == NULL) return -1;
+	for (n=0; n<p; ++n) {
+		for (i=0; i<k; ++i) counts[i] = 0;
+		pval = (int)pow((double)k, (double)n);
+		for (j=0; j<size; ++j) {
+			index = (int)(data[j]/pval) % k;
+			counts[index] += 1;
+		}
+		for (i=1; i<k; ++i) counts[i] += counts[i-1];
+		for (j=size-1; j>=0; --j) {
+			index = (int)(data[j]/pval) % k;
+			temp[counts[index]-1] = data[j];
+			counts[index] -= 1;
+		}
+		memcpy(data, temp, size*sizeof(int));
+	}
+	free(counts);
+	free(temp);
+	return 0;
+}
+
 //////////////////////////////
 
 //#include "test_common.h"
 #include <stdio.h>
 
 void test_agile_sort() {
-	int arr[] = {5,7,9,1,3,8,6,2,0,4};
+	int arr[] = {5,7,9,1,3,8,6,2,0};
 	int size = sizeof(arr)/sizeof(arr[0]);
 	int esize = sizeof(arr[0]);
 	int res;
 	dump_int_data(arr, size);
 	//res = issort(arr,size,esize,compare_int);
 	//res = qksort(arr, size, esize, 0, size-1, compare_int);
-	res = mgsort(arr, size, esize, 0, size-1, compare_int);
+	//res = mgsort(arr, size, esize, 0, size-1, compare_int);
+	//res = ctsort(arr, size, 10); (void)esize;
+	res = rxsort(arr, size, 1, 10); (void)esize;
 	printf("res: %d\n", res);
 	dump_int_data(arr, size);
 }

@@ -4,6 +4,8 @@
 int issort(void* data, int size, int esize, int(*compare)(const void*,const void*));
 int qksort(void* data, int size, int esize, int i, int k, int(*compare)(const void*,const void*));
 int mgsort(void* data, int size, int esize, int i, int k, int(*compare)(const void*,const void*));
+int ctsort(int* data, int size, int k);
+int rxsort(int* data, int size, int p, int k);
 
 void test_agile_sort();
 
