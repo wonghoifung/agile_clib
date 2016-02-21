@@ -14,6 +14,8 @@
 #include "agile_graph.h"
 #include "agile_sort.h"
 #include "agile_nummeths.h"
+#include "agile_compress.h"
+#include "agile_bit.h"
 
 int main() {
 	//test_agile_list();
@@ -30,7 +32,9 @@ int main() {
 	//test_agile_pqueue();
 	//test_agile_graph();
 	//test_agile_sort();
-	test_agile_nummeths();
+	//test_agile_nummeths();
+	test_agile_compress();
+	test_agile_bit();
 	return 0;
 }
 
