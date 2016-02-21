@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "agile_nummeths.h"
 
 int interpol(const double* x, const double* fx, int n, double* z, double* pz, int m) {
@@ -36,6 +37,23 @@ int interpol(const double* x, const double* fx, int n, double* z, double* pz, in
 	return 0;
 }
 
+void lsqe(const double* x, const double* y, int n, double* b1, double* b0) {
+	double sumx, sumy, sumx2, sumxy;
+	int i;
+	sumx = 0.0;
+	sumy = 0.0;
+	sumx2 = 0.0;
+	sumxy = 0.0;
+	for (i=0;i<n;++i) {
+		sumx += x[i];
+		sumy += y[i];
+		sumx2 += pow(x[i],2.0);
+		sumxy += (x[i] * y[i]);
+	}
+	*b1 = (sumxy - sumx * sumy / (double)n) / (sumx2 - pow(sumx,2.0) / (double)n);
+	*b0 = (sumy - (*b1 * sumx)) / (double)n;
+}
+
 //////////////////////////////
 
 #include <stdio.h>
@@ -48,4 +66,10 @@ void test_agile_nummeths() {
 	interpol(x, fx, 4, z, pz, 3);
 	for (int i=0; i<3; ++i) printf("%.3f ",pz[i]);
 	printf("\n");
+
+	double xi[9] = {-4.0, -3.0, -2.0, -1.5, -0.5, 1.0, 2.0, 3.5, 4.0};
+	double yi[9] = {-3.0, -1.0, -2.0, -0.5, 1.0, 0.0, 1.5, 1.0, 2.5};
+	double b1,b0;
+	lsqe(xi, yi, 9, &b1, &b0);
+	printf("%.4f %.4f\n", b1, b0);
 }
