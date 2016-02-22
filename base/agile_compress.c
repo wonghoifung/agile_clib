@@ -106,8 +106,84 @@ static int build_tree(int* freqs, agile_bitree** tree) {
 	return 0;
 }
 
-int agile_huffman_compress(const unsigned char* original, unsigned char** compressed, int size) {
+static void build_table(agile_bitree_node* node, unsigned short code, unsigned char size, agile_huff_code* table) {
+	if (!agile_bitree_is_eob(node)) {
+		if (!agile_bitree_is_eob(agile_bitree_left(node))) {
+			build_table(agile_bitree_left(node), code << 1, size + 1, table);
+		}
+		if (!agile_bitree_is_eob(agile_bitree_right(node))) {
+			build_table(agile_bitree_right(node), (code << 1) | 0x0001, size + 1, table);
+		}
+		if (agile_bitree_is_eob(agile_bitree_left(node)) && agile_bitree_is_eob(agile_bitree_right(node))) {
+			code = htons(code);
+			table[((agile_huff_node*)agile_bitree_data(node))->symbol].used = 1;
+			table[((agile_huff_node*)agile_bitree_data(node))->symbol].code = code;
+			table[((agile_huff_node*)agile_bitree_data(node))->symbol].size = size;
+		}
+	}
+}
 
+int agile_huffman_compress(const unsigned char* original, unsigned char** compressed, int size) {
+	agile_bitree* tree;
+	agile_huff_code table[UCHAR_MAX + 1];
+	int freqs[UCHAR_MAX + 1];
+	int max, scale, hsize, ipos, opos, cpos, c, i;
+	unsigned char* comp;
+	unsigned char* temp;
+	*compressed = NULL;
+	for (c=0; c<=UCHAR_MAX; ++c) freqs[c] = 0;
+	ipos = 0;
+	if (size > 0) {
+		while (ipos < size) {
+			freqs[original[ipos]] += 1;
+			ipos += 1;
+		}
+	}
+	max = UCHAR_MAX;
+	for (c=0; c<=UCHAR_MAX; ++c) {
+		if (freqs[c] > max) max = freqs[c];
+	} 
+	for (c=0; c<=UCHAR_MAX; ++c) {
+		scale = (int)(freqs[c] / ((double)max / (double)UCHAR_MAX));
+		if (scale == 0 && freqs[c] != 0) freqs[c] = 1;
+		else freqs[c] = scale;
+	} 
+	if (build_tree(freqs, &tree) != 0) return -1;
+	for (c=0; c<=UCHAR_MAX; ++c) memset(&table[c], 0, sizeof(agile_huff_code));
+	build_table(agile_bitree_root(tree), 0x0000, 0, table);
+	agile_bitree_destroy(tree);
+	free(tree);
+	hsize = sizeof(int) + (UCHAR_MAX + 1);
+	if ((comp = (unsigned char*)malloc(hsize)) == NULL) return -1;
+	memcpy(comp, &size, sizeof(int));
+	for (c=0; c<=UCHAR_MAX; ++c) comp[sizeof(int)+c] = (unsigned char)freqs[c];
+	ipos = 0;
+	opos = hsize * 8; // bit position
+	while (ipos < size) {
+		c = original[ipos];
+		for (i=0; i<table[c].size; ++i) {
+			if (opos % 8 == 0) {
+				if ((temp = (unsigned char*)realloc(comp, (opos / 8) + 1)) == NULL) {
+					free(comp);
+					return -1;
+				}
+				comp = temp;
+			}
+			// unsigned in value = 0x1234
+			// big endian:
+			//		buf[1] : 0x34
+			//		buf[0] : 0x12
+			// little endian:
+			//		buf[1] : 0x12
+			//		buf[0] : 0x34
+			cpos = (sizeof(short) * 8) - table[c].size + i; // see above comment to know why cpos is like this
+			agile_bit_set(comp, opos, agile_bit_get((unsigned char*)&table[c].code, cpos));
+			opos += 1;
+		}
+		ipos += 1;
+	}
+	*compressed = comp;
+	return ((opos - 1) / 8) + 1;
 }
 
 int agile_huffman_uncompress(const unsigned char* compressed, unsigned char** original) {
