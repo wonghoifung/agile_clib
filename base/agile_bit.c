@@ -37,7 +37,7 @@ void bit_rot_left(unsigned char* bits, int size, int count) {
 	if (size > 0) {
 		for (j=0; j<count; ++j) {
 			for (i=0; i<=((size-1)/8); ++i) {
-				lbit = agile_bit_get(&bit[i], 0);
+				lbit = agile_bit_get(&bits[i], 0);
 				if (i==0) fbit = lbit;
 				else agile_bit_set(&bits[i-1], 7, lbit);
 				bits[i] <<= 1;
@@ -49,7 +49,27 @@ void bit_rot_left(unsigned char* bits, int size, int count) {
 
 //////////////////////////////
 
-void test_agile_bit() {
+#include <stdio.h>
 
+static void dump_bits(const unsigned char* bits, int size) {
+	int bit;
+	for (int i=0; i<size; ++i) {
+		bit = agile_bit_get(bits, i);
+		if (i/8>0 && i%8==0) printf(" %d", bit);
+		else printf("%d", bit); 
+	}
+	printf("\n");
+}
+
+void test_agile_bit() {
+	unsigned char bits[4] = {0};
+	int size = 32;
+	dump_bits(bits, size);
+	agile_bit_set(bits, 7, 1);
+	agile_bit_set(bits, 9, 1);
+	dump_bits(bits, size);
+	bit_rot_left(bits, size, 7);
+	dump_bits(bits, size);
+	printf("bit2: %d\n", agile_bit_get(bits, 2));
 }
 
