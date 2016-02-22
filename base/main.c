@@ -34,7 +34,7 @@ int main() {
 	//test_agile_sort();
 	//test_agile_nummeths();
 	test_agile_compress();
-	test_agile_bit();
+	//test_agile_bit();
 	return 0;
 }
 

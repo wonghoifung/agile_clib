@@ -187,7 +187,63 @@ int agile_huffman_compress(const unsigned char* original, unsigned char** compre
 }
 
 int agile_huffman_uncompress(const unsigned char* compressed, unsigned char** original) {
-
+	agile_bitree* tree;
+	agile_bitree_node* node;
+	int freqs[UCHAR_MAX + 1];
+	int hsize, size, ipos, opos, state, c;
+	unsigned char* orig;
+	unsigned char* temp;
+	*original = orig = NULL;
+	hsize = sizeof(int) + (UCHAR_MAX + 1);
+	memcpy(&size, compressed, sizeof(int));
+	for (c=0; c<=UCHAR_MAX; ++c) freqs[c] = compressed[sizeof(int) + c];
+	if (build_tree(freqs, &tree) != 0) return -1;
+	ipos = hsize * 8;
+	opos = 0;
+	node = agile_bitree_root(tree);
+	while (opos < size) {
+		state = agile_bit_get(compressed, ipos);
+		ipos += 1;
+		if (state == 0) {
+			// move to left
+			if (agile_bitree_is_eob(node) || agile_bitree_is_eob(agile_bitree_left(node))) {
+				agile_bitree_destroy(tree);
+				free(tree);
+				return -1;
+			} else node = agile_bitree_left(node);
+		} else {
+			// move to right
+			if (agile_bitree_is_eob(node) || agile_bitree_is_eob(agile_bitree_right(node))) {
+				agile_bitree_destroy(tree);
+				free(tree);
+				return -1;
+			} else node = agile_bitree_right(node);
+		}
+		if (agile_bitree_is_eob(agile_bitree_left(node)) && agile_bitree_is_eob(agile_bitree_right(node))) {
+			if (opos > 0) {
+				if ((temp = (unsigned char*)realloc(orig, opos + 1)) == NULL) {
+					agile_bitree_destroy(tree);
+					free(tree);
+					free(orig);
+					return -1;
+				}
+				orig = temp;
+			} else {
+				if ((orig = (unsigned char*)malloc(1)) == NULL) {
+					agile_bitree_destroy(tree);
+					free(tree);
+					return -1;
+				}
+			}
+			orig[opos] = ((agile_huff_node*)agile_bitree_data(node))->symbol;
+			opos += 1;
+			node = agile_bitree_root(tree);
+		}
+	}
+	agile_bitree_destroy(tree);
+	free(tree);
+	*original = orig;
+	return opos;
 }
 
 int agile_lz77_compress(const unsigned char* original, unsigned char** compressed, int size) {
@@ -200,6 +256,38 @@ int agile_lz77_uncompress(const unsigned char* compressed, unsigned char** origi
 
 //////////////////////////////
 
-void test_agile_compress() {
+const unsigned char TEST_STRING[] = "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf"
+								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf";
 
+void test_agile_compress() {
+	unsigned char* original = TEST_STRING;
+	int origsize = sizeof(TEST_STRING);
+	unsigned char* compressed;
+	int compsize = agile_huffman_compress(original, &compressed, origsize);
+	printf("origsize:%d, compsize:%d\n", origsize, compsize);
+	unsigned char* original2;
+	int origsize2 = agile_huffman_uncompress(compressed, &original2);
+	printf("origsize2:%d, compare original and origsize2:%d\n", origsize2, strcmp(original,original2));
+	free(compressed);
+	free(original2);
 }
