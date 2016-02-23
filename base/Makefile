@@ -2,10 +2,11 @@ src = $(wildcard *.c src/*.c)
 obj = $(patsubst %.c, %.o, $(src))
 
 #LIB = -ldl
+LIB = -lm
 
 CC = gcc
 
-CFLAGS = -pipe -Wall -O2 
+CFLAGS = -pipe -Wall -O2 -std=c99 
 CFLAGS += -I./ 
 CFLAGS += -I./src/
 

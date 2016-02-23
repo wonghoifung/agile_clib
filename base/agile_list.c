@@ -83,7 +83,7 @@ void print_list(agile_list* list) {
 	agile_list_element* elm = agile_list_head(list);
 	printf("list: ");
 	while (elm != NULL) {
-		printf("%s ", agile_list_data(elm));
+		printf("%s ", (char*)agile_list_data(elm));
 		elm = agile_list_next(elm);
 	}
 	printf("\n");

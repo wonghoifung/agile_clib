@@ -61,7 +61,7 @@ static void print_clist(agile_clist* list) {
 	agile_clist_element* elm = agile_clist_head(list);
 	printf("clist: ");
 	do {
-		printf("%s ", agile_clist_data(elm));
+		printf("%s ", (char*)agile_clist_data(elm));
 		elm = agile_clist_next(elm);
 	} while (elm != agile_clist_head(list));
 	printf("\n");

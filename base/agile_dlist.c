@@ -105,7 +105,7 @@ static void print_dlist(agile_dlist* list) {
 	agile_dlist_element* elm = agile_dlist_head(list);
 	printf("dlist: ");
 	while (elm != NULL) {
-		printf("%s ", agile_dlist_data(elm));
+		printf("%s ", (char*)agile_dlist_data(elm));
 		elm = agile_dlist_next(elm);
 	}
 	printf("\n");
