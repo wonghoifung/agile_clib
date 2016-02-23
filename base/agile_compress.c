@@ -294,14 +294,43 @@ int agile_lz77_compress(const unsigned char* original, unsigned char** compresse
 	remaining = size;
 	while (remaining > 0) {
 		if ((length = compare_win(window, buffer, &offset, &next)) != 0) {
+			// phrase tag: (1) winoff(12) len(5) unmatch(8)
 			token = 0x00000001 << (LZ77_PHRASE_BITS - 1);
-			// TODO
+			token |= (offset << (LZ77_PHRASE_BITS - LZ77_TYPE_BITS - LZ77_WINOFF_BITS));
+			token |= (length << (LZ77_PHRASE_BITS - LZ77_TYPE_BITS - LZ77_WINOFF_BITS - LZ77_BUFLEN_BITS));
+			token |= next;
+			tbits = LZ77_PHRASE_BITS;
 		} else {
+			// symbol tag: (0) unmatch(8)
 			token = 0x00000000;
 			token |= next;
 			tbits = LZ77_SYMBOL_BITS;
 		}
+		token = htonl(token);
+		for (i = 0; i < tbits; ++i) {
+			if (opos % 8 ==  0) {
+				if ((temp = (unsigned char*)realloc(comp, (opos/8)+1)) == NULL) {
+					free(comp);
+					return -1;
+				}
+				comp = temp;
+			}
+			tpos = (sizeof(unsigned long) * 8) - tbits + i;
+			agile_bit_set(comp, opos, agile_bit_get((unsigned char*)&token, tpos));
+			opos += 1;
+		}
+		length += 1; // the unmatched symbol
+		memmove(&window[0], &window[length], LZ77_WINDOW_SIZE - length);
+		memmove(&window[LZ77_WINDOW_SIZE - length], &buffer[0], length);
+		memmove(&buffer[0], &buffer[length], LZ77_BUFFER_SIZE - length);
+		for (i=LZ77_BUFFER_SIZE-length; i<LZ77_BUFFER_SIZE && ipos<size; ++i) {
+			buffer[i] = original[ipos];
+			ipos += 1;
+		}
+		remaining -= length;
 	}
+	*compressed = comp;
+	return ((opos-1)/8)+1;
 }
 
 int agile_lz77_uncompress(const unsigned char* compressed, unsigned char** original) {
@@ -334,6 +363,7 @@ const unsigned char TEST_STRING[] = "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfja
 								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf";
 
 void test_agile_compress() {
+	// test huffman
 	unsigned char* original = (unsigned char*)TEST_STRING;
 	int origsize = sizeof(TEST_STRING);
 	unsigned char* compressed;
@@ -344,4 +374,9 @@ void test_agile_compress() {
 	printf("origsize2:%d, compare original and origsize2:%d\n", origsize2, strcmp((char*)original,(char*)original2));
 	free(compressed);
 	free(original2);
+
+	// test lz77
+	unsigned char* lzcompressed;
+	int lzcompsize = agile_lz77_compress(original, &lzcompressed, origsize);
+	printf("origsize:%d, lzcompsize:%d\n", origsize, lzcompsize);
 }
