@@ -272,7 +272,36 @@ static int compare_win(const unsigned char* window, const unsigned char* buffer,
 }
 
 int agile_lz77_compress(const unsigned char* original, unsigned char** compressed, int size) {
-
+	unsigned long token;
+	unsigned char window[LZ77_WINDOW_SIZE];
+	unsigned char buffer[LZ77_BUFFER_SIZE];
+	unsigned char* comp;
+	unsigned char* temp;
+	unsigned char next;
+	int offset, length, remaining, tbits, hsize, ipos, opos, tpos, i;
+	*compressed = NULL;
+	hsize = sizeof(int);
+	if ((comp = (unsigned char*)malloc(hsize)) == NULL) return -1;
+	memcpy(comp, &size, sizeof(int));
+	memset(window, 0, LZ77_WINDOW_SIZE);
+	memset(buffer, 0, LZ77_BUFFER_SIZE);
+	ipos = 0;
+	for (i=0; i<LZ77_BUFFER_SIZE && ipos<size; ++i) {
+		buffer[i] = original[ipos];
+		ipos += 1;
+	}
+	opos = hsize * 8;
+	remaining = size;
+	while (remaining > 0) {
+		if ((length = compare_win(window, buffer, &offset, &next)) != 0) {
+			token = 0x00000001 << (LZ77_PHRASE_BITS - 1);
+			// TODO
+		} else {
+			token = 0x00000000;
+			token |= next;
+			tbits = LZ77_SYMBOL_BITS;
+		}
+	}
 }
 
 int agile_lz77_uncompress(const unsigned char* compressed, unsigned char** original) {
