@@ -51,7 +51,7 @@ void bit_rot_left(unsigned char* bits, int size, int count) {
 
 #include <stdio.h>
 
-static void dump_bits(const unsigned char* bits, int size) {
+void dump_bits(const unsigned char* bits, int size) {
 	int bit;
 	for (int i=0; i<size; ++i) {
 		bit = agile_bit_get(bits, i);
