@@ -2,6 +2,7 @@
 #include <netinet/in.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include "agile_compress.h"
 #include "agile_bit.h"
 #include "agile_pqueue.h"
@@ -246,6 +247,30 @@ int agile_huffman_uncompress(const unsigned char* compressed, unsigned char** or
 	return opos;
 }
 
+static int compare_win(const unsigned char* window, const unsigned char* buffer, int* offset, unsigned char* next) {
+	int match, longest, i, j, k;
+	*offset = 0;
+	longest = 0;
+	*next = buffer[0];
+	for (k=0; k<LZ77_WINDOW_SIZE; ++k) { // sliding window
+		i=k;
+		j=0;
+		match=0;
+		while (i<LZ77_WINDOW_SIZE && j<LZ77_BUFFER_SIZE-1) { // check look-ahead buffer
+			if (window[i] != buffer[j]) break;
+			match += 1;
+			i += 1;
+			j += 1;
+		}
+		if (match > longest) {
+			*offset = k;
+			longest = match;
+			*next = buffer[j];
+		}
+	}
+	return longest;
+}
+
 int agile_lz77_compress(const unsigned char* original, unsigned char** compressed, int size) {
 
 }
@@ -280,14 +305,14 @@ const unsigned char TEST_STRING[] = "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfja
 								    "aabcasl;dkfjas;lkdjfa;skdfjs;akdfjls;akdfjals;kdfj;lsakdf";
 
 void test_agile_compress() {
-	unsigned char* original = TEST_STRING;
+	unsigned char* original = (unsigned char*)TEST_STRING;
 	int origsize = sizeof(TEST_STRING);
 	unsigned char* compressed;
 	int compsize = agile_huffman_compress(original, &compressed, origsize);
 	printf("origsize:%d, compsize:%d\n", origsize, compsize);
 	unsigned char* original2;
 	int origsize2 = agile_huffman_uncompress(compressed, &original2);
-	printf("origsize2:%d, compare original and origsize2:%d\n", origsize2, strcmp(original,original2));
+	printf("origsize2:%d, compare original and origsize2:%d\n", origsize2, strcmp((char*)original,(char*)original2));
 	free(compressed);
 	free(original2);
 }
