@@ -16,6 +16,7 @@
 #include "agile_nummeths.h"
 #include "agile_compress.h"
 #include "agile_bit.h"
+#include "agile_encrypt.h"
 
 int main() {
 	//test_agile_list();
@@ -33,8 +34,9 @@ int main() {
 	//test_agile_graph();
 	//test_agile_sort();
 	//test_agile_nummeths();
-	test_agile_compress();
+	//test_agile_compress();
 	//test_agile_bit();
+	test_agile_encrypt();
 	return 0;
 }
 
