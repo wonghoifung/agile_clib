@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "agile_bit.h"
@@ -107,12 +108,107 @@ static const int DesFinal[64] = {
    34,  2, 42, 10, 50, 18, 58, 26, 33,  1, 41,  9, 49, 17, 57, 25
 };
 
-void agile_des_encipher(const unsigned char* plaintext, unsigned char* ciphertext, const unsigned char* key) {
+typedef enum DesEorD_ {
+   encipher,
+   decipher
+} DesEorD;
 
+static void permute(unsigned char* bits, const int* mapping, int n) {
+   unsigned char temp[8];
+   int i;
+   memset(temp, 0, (int)ceil(n/8));
+   for (i=0; i<n; ++i) 
+      agile_bit_set(temp, i, agile_bit_get(bits, mapping[i]-1));
+   memcpy(bits, temp, (int)ceil(n/8));
+}
+
+static int des_main(const unsigned char* source, unsigned char* target, const unsigned char* key, DesEorD direction) {
+   static unsigned char subkeys[16][7];
+   unsigned char temp[8], lkey[4], rkey[4], lblk[6], rblk[6], fblk[6], xblk[6], sblk;
+   int row, col, i, j, k, p;
+   if (key != NULL) { // build 16 keys
+      memcpy(temp, key, 8);
+      permute(temp, DesTransform, 56);
+      memset(lkey, 0, 4);
+      memset(rkey, 0, 4);
+      for (j=0; j<28; ++j) agile_bit_set(lkey, j, agile_bit_get(temp, j));
+      for (j=0; j<28; ++j) agile_bit_set(rkey, j, agile_bit_get(temp, j+28));
+      for (i=0; i<16; ++i) {
+         agile_bit_rot_left(lkey, 28, DesRotations[i]);
+         agile_bit_rot_left(rkey, 28, DesRotations[i]);
+         for (j=0; j<28; ++j) agile_bit_set(subkeys[i], j, agile_bit_get(lkey, j));
+         for (j=0; j<28; ++j) agile_bit_set(subkeys[i], j+28, agile_bit_get(rkey, j));
+         permute(subkeys[i], DesPermuted, 48);
+      }
+   }
+   memcpy(temp, source, 8);
+   permute(temp, DesInitial, 64);
+   memcpy(lblk, &temp[0], 4);
+   memcpy(rblk, &temp[4], 4);
+   for (i=0; i<16; ++i) { // encipher or decipher the source text
+      memcpy(fblk, rblk, 4);
+      permute(fblk, DesExpansion, 48);
+      if (direction == encipher) {
+         agile_bit_xor(fblk, subkeys[i], xblk, 48);
+         memcpy(fblk, xblk, 6);
+      } else {
+         agile_bit_xor(fblk, subkeys[15-i], xblk, 48);
+         memcpy(fblk, xblk, 6);
+      }
+      // sbox substitutions
+      p = 0;
+      for (j=0; j<8; ++j) {
+         row = (agile_bit_get(fblk, (j*6)+0)*2) + (agile_bit_get(fblk, (j*6)+5)*1);
+         col = (agile_bit_get(fblk, (j*6)+1)*8) + (agile_bit_get(fblk, (j*6)+2)*4) +
+               (agile_bit_get(fblk, (j*6)+3)*2) + (agile_bit_get(fblk, (j*6)+4)*1);
+         sblk = (unsigned char)DesSbox[j][row][col];
+         for (k=4; k<8; ++k) {
+            agile_bit_set(fblk, p, agile_bit_get(&sblk, k));
+            p += 1;
+         }
+      }
+      // pbox
+      permute(fblk, DesPbox, 32);
+      agile_bit_xor(lblk, fblk, xblk, 32);
+      memcpy(lblk, rblk, 4);
+      memcpy(rblk, xblk, 4);
+   }
+   memcpy(&target[0], rblk, 4);
+   memcpy(&target[4], lblk, 4);
+   permute(target, DesFinal, 64);
+   return 0;
+}
+
+void agile_des_encipher(const unsigned char* plaintext, unsigned char* ciphertext, const unsigned char* key) {
+   des_main(plaintext, ciphertext, key, encipher);
 }
 
 void agile_des_decipher(const unsigned char* ciphertext, unsigned char* plaintext, const unsigned char* key) {
+   des_main(ciphertext, plaintext, key, decipher);
+}
 
+void agile_cbc_encipher(const unsigned char* plaintext, unsigned char* ciphertext, const unsigned char* key, int size) {
+   unsigned char temp[8];
+   int i;
+   agile_des_encipher(&plaintext[0], &ciphertext[0], key);
+   i = 8;
+   while (i < size) {
+      agile_bit_xor(&plaintext[i], &ciphertext[i-8], temp, 64);
+      agile_des_encipher(temp, &ciphertext[i], NULL);
+      i += 8;
+   }
+}
+
+void agile_cbc_decipher(const unsigned char* ciphertext, unsigned char* plaintext, const unsigned char* key, int size) {
+   unsigned char temp[8];
+   int i;
+   agile_des_decipher(&ciphertext[0], &plaintext[0], key);
+   i = 8;
+   while (i < size) {
+      agile_des_decipher(&ciphertext[i], temp, NULL);
+      agile_bit_xor(&ciphertext[i-8], temp, &plaintext[i], 64);
+      i += 8;
+   }
 }
 
 void agile_rsa_encipher(Huge plaintext, Huge* ciphertext, agile_rsa_pub_key pubkey) {
@@ -126,6 +222,37 @@ void agile_rsa_decipher(Huge ciphertext, Huge* plaintext, agile_rsa_pri_key prik
 //////////////////////////////
 
 void test_agile_encrypt() {
-
+   #if 0
+   unsigned char plaintext[8] = {'1','2','3','4','5','6','7','8'};
+   dump_bits(plaintext, 64); printf("\n");
+   unsigned char ciphertext[8] = {0};
+   unsigned char key[8] = {'a','b','c','d','e','f','g','h'};
+   agile_des_encipher(plaintext, ciphertext, key);
+   dump_bits(ciphertext, 64); printf("\n");
+   unsigned char plaintext2[8] = {0};
+   agile_des_decipher(ciphertext, plaintext2, key);
+   dump_bits(plaintext2, 64); printf("\n");
+   #endif
+   {
+      unsigned char key[8] = {'a','b','c','d','e','f','g','h'};
+      unsigned char* plaintext = (unsigned char*)"123456789";
+      int size = strlen((char*)plaintext) + 1;
+      printf("actual plaintext:\n");
+      dump_bits(plaintext, size*8); printf("\n");
+      printf("plaintext:\n");
+      dump_bits(plaintext, size*8+64); printf("\n");
+      unsigned char* ciphertext = (unsigned char*)malloc(size+8);
+      memset(ciphertext, 0, size+8);
+      agile_cbc_encipher(plaintext, ciphertext, key, size);
+      printf("ciphertext:\n");
+      dump_bits(ciphertext, size*8+64); printf("\n");
+      unsigned char* plaintext2 = (unsigned char*)malloc(size+8);
+      memset(plaintext2, 0, size+8);
+      agile_cbc_decipher(ciphertext, plaintext2, key, size);
+      printf("plaintext2:\n");
+      dump_bits(plaintext2, size*8+64); printf("\n");
+      free(ciphertext);
+      free(plaintext2);
+   }
 }
 

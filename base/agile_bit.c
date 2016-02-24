@@ -30,7 +30,7 @@ void agile_bit_xor(const unsigned char* bits1, const unsigned char* bits2, unsig
 	}
 }
 
-void bit_rot_left(unsigned char* bits, int size, int count) {
+void agile_bit_rot_left(unsigned char* bits, int size, int count) {
 	int fbit;
 	int lbit;
 	int i,j;
@@ -68,7 +68,7 @@ void test_agile_bit() {
 	agile_bit_set(bits, 7, 1);
 	agile_bit_set(bits, 9, 1);
 	dump_bits(bits, size);
-	bit_rot_left(bits, size, 7);
+	agile_bit_rot_left(bits, size, 7);
 	dump_bits(bits, size);
 	printf("bit2: %d\n", agile_bit_get(bits, 2));
 }

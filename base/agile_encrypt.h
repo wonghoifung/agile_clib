@@ -16,6 +16,9 @@ typedef struct agile_rsa_pri_key_ {
 void agile_des_encipher(const unsigned char* plaintext, unsigned char* ciphertext, const unsigned char* key);
 void agile_des_decipher(const unsigned char* ciphertext, unsigned char* plaintext, const unsigned char* key);
 
+void agile_cbc_encipher(const unsigned char* plaintext, unsigned char* ciphertext, const unsigned char* key, int size);
+void agile_cbc_decipher(const unsigned char* ciphertext, unsigned char* plaintext, const unsigned char* key, int size);
+
 void agile_rsa_encipher(Huge plaintext, Huge* ciphertext, agile_rsa_pub_key pubkey);
 void agile_rsa_decipher(Huge ciphertext, Huge* plaintext, agile_rsa_pri_key prikey);
 
