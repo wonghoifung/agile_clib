@@ -69,8 +69,72 @@ int agile_mst(agile_graph* graph, const agile_mst_vertex* start, agile_list* spa
 	return 0;
 }
 
-int agile_shortest(agile_graph* graph, const agile_path_vertex* start, agile_list* paths, int(*match)(const void*,const void*)) {
+static void relax(agile_path_vertex* u, agile_path_vertex* v, double weight) {
+	if (v->d > u->d + weight) {
+		v->d = u->d + weight;
+		v->parent = u;
+	}
+}
 
+int agile_shortest(agile_graph* graph, const agile_path_vertex* start, agile_list* paths, int(*match)(const void*,const void*)) {
+	agile_adj_list* adjlist;
+	agile_path_vertex* pth_vertex;
+	agile_path_vertex* adj_vertex;
+	agile_list_element* element;
+	agile_list_element* member;
+	double minimum;
+	int found, i;
+	found = 0;
+	// init
+	for (element=agile_list_head(&agile_graph_adjlists(graph)); element!=NULL; element=agile_list_next(element)) {
+		pth_vertex = ((agile_adj_list*)agile_list_data(element))->vertex;
+		if (match(pth_vertex, start)) {
+			pth_vertex->color = white;
+			pth_vertex->d = 0;
+			pth_vertex->parent = NULL;
+			found = 1;
+		} else {
+			pth_vertex->color = white;
+			pth_vertex->d = DBL_MAX;
+			pth_vertex->parent = NULL;
+		}
+	}
+	if (!found) return -1;
+	// dijkstra's algorithm
+	i = 0;
+	while (i < agile_graph_vcount(graph)) {
+		minimum = DBL_MAX;
+		for (element=agile_list_head(&agile_graph_adjlists(graph)); element!=NULL; element=agile_list_next(element)) {
+			pth_vertex = ((agile_adj_list*)agile_list_data(element))->vertex;
+			if (pth_vertex->color == white && pth_vertex->d < minimum) {
+				minimum = pth_vertex->d;
+				adjlist = agile_list_data(element);
+			}
+		}
+		((agile_path_vertex*)adjlist->vertex)->color = black;
+		for (member=agile_list_head(&adjlist->adjacent); member!=NULL; member=agile_list_next(member)) {
+			adj_vertex = agile_list_data(member);
+			for (element=agile_list_head(&agile_graph_adjlists(graph)); element!=NULL; element=agile_list_next(element)) {
+				pth_vertex = ((agile_adj_list*)agile_list_data(element))->vertex;
+				if (match(pth_vertex, adj_vertex)) {
+					relax(adjlist->vertex, pth_vertex, adj_vertex->weight);
+				}
+			}
+		}
+		i += 1;
+	}
+	// result
+	agile_list_init(paths, NULL);
+	for (element=agile_list_head(&agile_graph_adjlists(graph)); element!=NULL; element=agile_list_next(element)) {
+		pth_vertex = ((agile_adj_list*)agile_list_data(element))->vertex;
+		if (pth_vertex->color == black) {
+			if (agile_list_ins_next(paths, agile_list_tail(paths), pth_vertex) != 0) {
+				agile_list_destroy(paths);
+				return -1;
+			}
+		}
+	}
+	return 0;
 }
 
 int agile_tsp(agile_graph* graph, const agile_tsp_vertex* start, agile_list* tour, int(*match)(const void*,const void*)) {
@@ -84,7 +148,7 @@ int mst_vertex_match(const void* data1, const void* data2) {
 	return 0;
 }
 
-void vprint_list(agile_list* list) {
+static void vprint_list(agile_list* list) {
 	agile_list_element* elm = agile_list_head(list);
 	//printf("list: ");
 	while (elm != NULL) {
