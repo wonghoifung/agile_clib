@@ -211,12 +211,24 @@ void agile_cbc_decipher(const unsigned char* ciphertext, unsigned char* plaintex
    }
 }
 
-void agile_rsa_encipher(Huge plaintext, Huge* ciphertext, agile_rsa_pub_key pubkey) {
-
+// pow(a,b)%n
+static long long modexp(long long a, int b, int n) {
+   long long y;
+   y = 1;
+   while (b != 0) {
+      if (b & 1) y = (y * a) % n;
+      a = (a * a) % n;
+      b >>= 1;
+   }
+   return y;
 }
 
-void agile_rsa_decipher(Huge ciphertext, Huge* plaintext, agile_rsa_pri_key prikey) {
+void agile_rsa_encipher(int plaintext, long long* ciphertext, agile_rsa_pub_key pubkey) {
+   *ciphertext = modexp(plaintext, pubkey.e, pubkey.n);
+}
 
+void agile_rsa_decipher(long long ciphertext, int* plaintext, agile_rsa_pri_key prikey) {
+   *plaintext = modexp(ciphertext, prikey.d, prikey.n);
 }
 
 //////////////////////////////
@@ -253,6 +265,42 @@ void test_agile_encrypt() {
       dump_bits(plaintext2, size*8+64); printf("\n");
       free(ciphertext);
       free(plaintext2);
+   }
+   {
+      int p = 11, q = 19; // big prime number
+      int n = p * q;
+      int e = 17; // odd number, having no same factor with (p-1)(q-1)
+      int d = 1;
+      while (1) {
+         if ((e * d) % ((p-1) * (q-1)) == 1) break;
+         d += 1;
+      }
+      // e = 5327;
+      // d = 162623;
+      // n = 345347;
+      printf("e:%d, d:%d, n:%d\n", e, d, n);
+      agile_rsa_pub_key pubkey;
+      pubkey.e = e;
+      pubkey.n = n;
+      agile_rsa_pri_key prikey;
+      prikey.d = d;
+      prikey.n = n;
+      int plaintext = 0;
+      int fcnt = 0;
+      while (fcnt < 10) {
+         long long ciphertext = 0;
+         agile_rsa_encipher(plaintext, &ciphertext, pubkey);
+         int plaintext2 = 0;
+         agile_rsa_decipher(ciphertext, &plaintext2, prikey);
+         if (plaintext != plaintext2) {
+            printf("%d failed\n", plaintext);
+            fcnt += 1;
+            plaintext += 1;
+            continue;
+         }
+         printf("%d ok\n", plaintext);
+         plaintext += 1;
+      }
    }
 }
 
