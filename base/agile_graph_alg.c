@@ -2,10 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 #include "agile_graph_alg.h"
 
 int agile_mst(agile_graph* graph, const agile_mst_vertex* start, agile_list* span, int(*match)(const void*,const void*)) {
-	agile_adj_list* adjlist;
+	agile_adj_list* adjlist = NULL;
 	agile_mst_vertex* mst_vertex;
 	agile_mst_vertex* adj_vertex;
 	agile_list_element* element;
@@ -77,7 +78,7 @@ static void relax(agile_path_vertex* u, agile_path_vertex* v, double weight) {
 }
 
 int agile_shortest(agile_graph* graph, const agile_path_vertex* start, agile_list* paths, int(*match)(const void*,const void*)) {
-	agile_adj_list* adjlist;
+	agile_adj_list* adjlist = NULL;
 	agile_path_vertex* pth_vertex;
 	agile_path_vertex* adj_vertex;
 	agile_list_element* element;
@@ -137,8 +138,64 @@ int agile_shortest(agile_graph* graph, const agile_path_vertex* start, agile_lis
 	return 0;
 }
 
-int agile_tsp(agile_graph* graph, const agile_tsp_vertex* start, agile_list* tour, int(*match)(const void*,const void*)) {
-
+int agile_tsp(agile_list* vertics, const agile_tsp_vertex* start, agile_list* tour, int(*match)(const void*,const void*)) {
+	agile_tsp_vertex* tsp_vertex;
+	agile_tsp_vertex* tsp_start = NULL;
+	agile_tsp_vertex* selection = NULL;
+	agile_list_element* element;
+	double minimum, distance, x=0, y=0;
+	int found, i;
+	agile_list_init(tour, NULL);
+	found = 0;
+	// init vertex
+	for (element=agile_list_head(vertics); element!=NULL; element=agile_list_next(element)) {
+		tsp_vertex = agile_list_data(element);
+		if (match(tsp_vertex, start)) {
+			if (agile_list_ins_next(tour, agile_list_tail(tour), tsp_vertex)!=0) {
+				agile_list_destroy(tour);
+				return -1;
+			}
+			tsp_start = tsp_vertex;
+			x = tsp_vertex->x;
+			y = tsp_vertex->y;
+			tsp_vertex->color = black;
+			found = 1;
+		} else {
+			tsp_vertex->color = white;
+		}
+	}
+	if (!found) {
+		agile_list_destroy(tour);
+		return -1;
+	}
+	// nearest neighbor heuristic
+	i = 0;
+	while (i < agile_list_size(vertics) - 1) {
+		minimum = DBL_MAX;
+		for (element=agile_list_head(vertics); element!=NULL; element=agile_list_next(element)) {
+			tsp_vertex = agile_list_data(element);
+			if (tsp_vertex->color == white) {
+				distance = sqrt(pow(tsp_vertex->x - x, 2.0) + pow(tsp_vertex->y - y, 2.0));
+				if (distance < minimum) {
+					minimum = distance;
+					selection = tsp_vertex;
+				}
+			}
+		}
+		x = selection->x;
+		y = selection->y;
+		selection->color = black;
+		if (agile_list_ins_next(tour, agile_list_tail(tour), selection) != 0) {
+			agile_list_destroy(tour);
+			return -1;
+		}
+		i += 1;
+	}
+	if (agile_list_ins_next(tour, agile_list_tail(tour), tsp_start) != 0) {
+		agile_list_destroy(tour);
+		return -1;
+	}
+	return 0;
 }
 
 //////////////////////////////
@@ -150,6 +207,11 @@ static int mst_vertex_match(const void* data1, const void* data2) {
 
 static int shortest_vertex_match(const void* data1, const void* data2) {
 	if (strcmp((char*)(((agile_path_vertex*)data1)->data), (char*)(((agile_path_vertex*)data2)->data))==0) return 1;
+	return 0;
+}
+
+static int tsp_vertex_match(const void* data1, const void* data2) {
+	if (strcmp((char*)(((agile_tsp_vertex*)data1)->data), (char*)(((agile_tsp_vertex*)data2)->data))==0) return 1;
 	return 0;
 }
 
@@ -177,6 +239,15 @@ static void shortest_print_list(agile_list* list) {
 			printf("%s parent:null\n", (char*)(pth_vertex->data));
 		}
 		
+		elm = agile_list_next(elm);
+	}
+}
+
+static void tsp_print_list(agile_list* list) {
+	agile_list_element* elm = agile_list_head(list);
+	while (elm != NULL) {
+		agile_tsp_vertex* tsp_vertex = (agile_tsp_vertex*)agile_list_data(elm);
+		printf("%s\n", (char*)(tsp_vertex->data));
 		elm = agile_list_next(elm);
 	}
 }
@@ -255,8 +326,8 @@ static void test_agile_mst() {
 	agile_graph_destroy(&graph);
 }
 
-void test_agile_shortest() {
-agile_graph graph;
+static void test_agile_shortest() {
+	agile_graph graph;
 	agile_graph_init(&graph, shortest_vertex_match, NULL);
 	
 	char* a = "a";
@@ -314,8 +385,35 @@ agile_graph graph;
 	agile_graph_destroy(&graph);
 }
 
+static void test_agile_tsp() {
+	agile_tsp_vertex va; va.data = "a"; va.x = 2; va.y = 1;
+	agile_tsp_vertex vb; vb.data = "b"; vb.x = 5; vb.y = 2;
+	agile_tsp_vertex vc; vc.data = "c"; vc.x = 1; vc.y = 3;
+	agile_tsp_vertex vd; vd.data = "d"; vd.x = 4; vd.y = 3;
+	agile_tsp_vertex ve; ve.data = "e"; ve.x = 6; ve.y = 3;
+	agile_tsp_vertex vf; vf.data = "f"; vf.x = 2; vf.y = 4;
+	agile_tsp_vertex vg; vg.data = "g"; vg.x = 5; vg.y = 5;
+
+	agile_list list;
+	agile_list_init(&list, NULL);
+	agile_list_ins_next(&list, agile_list_tail(&list), &va);
+	agile_list_ins_next(&list, agile_list_tail(&list), &vb);
+	agile_list_ins_next(&list, agile_list_tail(&list), &vc);
+	agile_list_ins_next(&list, agile_list_tail(&list), &vd);
+	agile_list_ins_next(&list, agile_list_tail(&list), &ve);
+	agile_list_ins_next(&list, agile_list_tail(&list), &vf);
+	agile_list_ins_next(&list, agile_list_tail(&list), &vg);
+	agile_list tour;
+	agile_tsp(&list, &va, &tour, tsp_vertex_match);
+	tsp_print_list(&tour);
+	agile_list_destroy(&tour);
+	agile_list_destroy(&list);
+}
+
 void test_agile_graph_alg() {
 	test_agile_mst();
 	printf("\n");
 	test_agile_shortest();
+	printf("\n");
+	test_agile_tsp();
 }

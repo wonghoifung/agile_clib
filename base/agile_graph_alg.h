@@ -35,7 +35,7 @@ int agile_mst(agile_graph* graph, const agile_mst_vertex* start, agile_list* spa
 // weighted graph with direction
 int agile_shortest(agile_graph* graph, const agile_path_vertex* start, agile_list* paths, int(*match)(const void*,const void*));
 // weighted graph without direction
-int agile_tsp(agile_graph* graph, const agile_tsp_vertex* start, agile_list* tour, int(*match)(const void*,const void*));
+int agile_tsp(agile_list* vertics, const agile_tsp_vertex* start, agile_list* tour, int(*match)(const void*,const void*));
 
 void test_agile_graph_alg();
 
