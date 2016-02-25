@@ -143,14 +143,18 @@ int agile_tsp(agile_graph* graph, const agile_tsp_vertex* start, agile_list* tou
 
 //////////////////////////////
 
-int mst_vertex_match(const void* data1, const void* data2) {
+static int mst_vertex_match(const void* data1, const void* data2) {
 	if (strcmp((char*)(((agile_mst_vertex*)data1)->data), (char*)(((agile_mst_vertex*)data2)->data))==0) return 1;
 	return 0;
 }
 
-static void vprint_list(agile_list* list) {
+static int shortest_vertex_match(const void* data1, const void* data2) {
+	if (strcmp((char*)(((agile_path_vertex*)data1)->data), (char*)(((agile_path_vertex*)data2)->data))==0) return 1;
+	return 0;
+}
+
+static void mst_print_list(agile_list* list) {
 	agile_list_element* elm = agile_list_head(list);
-	//printf("list: ");
 	while (elm != NULL) {
 		agile_mst_vertex* mst_vertex = (agile_mst_vertex*)agile_list_data(elm);
 		if (mst_vertex->parent) {
@@ -163,7 +167,21 @@ static void vprint_list(agile_list* list) {
 	}
 }
 
-void test_agile_graph_alg() {
+static void shortest_print_list(agile_list* list) {
+	agile_list_element* elm = agile_list_head(list);
+	while (elm != NULL) {
+		agile_path_vertex* pth_vertex = (agile_path_vertex*)agile_list_data(elm);
+		if (pth_vertex->parent) {
+			printf("%s parent:%s\n", (char*)(pth_vertex->data), (char*)(pth_vertex->parent->data));
+		} else {
+			printf("%s parent:null\n", (char*)(pth_vertex->data));
+		}
+		
+		elm = agile_list_next(elm);
+	}
+}
+
+static void test_agile_mst() {
 	agile_graph graph;
 	agile_graph_init(&graph, mst_vertex_match, NULL);
 	
@@ -232,7 +250,72 @@ void test_agile_graph_alg() {
 	agile_list span;
 	int res = agile_mst(&graph, &amv, &span, mst_vertex_match);
 	printf("res: %d\n", res);
-	vprint_list(&span);
+	mst_print_list(&span);
 
 	agile_graph_destroy(&graph);
+}
+
+void test_agile_shortest() {
+agile_graph graph;
+	agile_graph_init(&graph, shortest_vertex_match, NULL);
+	
+	char* a = "a";
+	char* b = "b";
+	char* c = "c";
+	char* d = "d";
+	char* e = "e";
+	char* f = "f";
+	agile_path_vertex amv; amv.data = (void*)a; amv.parent = NULL;
+	agile_path_vertex bmv; bmv.data = (void*)b; bmv.parent = NULL;
+	agile_path_vertex cmv; cmv.data = (void*)c; cmv.parent = NULL;
+	agile_path_vertex dmv; dmv.data = (void*)d; dmv.parent = NULL;
+	agile_path_vertex emv; emv.data = (void*)e; emv.parent = NULL;
+	agile_path_vertex fmv; fmv.data = (void*)f; fmv.parent = NULL;
+
+	agile_graph_ins_vertex(&graph, (void*)&amv);
+	agile_graph_ins_vertex(&graph, (void*)&bmv);
+	agile_graph_ins_vertex(&graph, (void*)&cmv);
+	agile_graph_ins_vertex(&graph, (void*)&dmv);
+	agile_graph_ins_vertex(&graph, (void*)&emv);
+	agile_graph_ins_vertex(&graph, (void*)&fmv);
+
+	agile_path_vertex abmv = bmv; abmv.weight = 8;
+	agile_path_vertex acmv = cmv; acmv.weight = 4;
+	agile_graph_ins_edge(&graph, (void*)&amv, (void*)&abmv);
+	agile_graph_ins_edge(&graph, (void*)&amv, (void*)&acmv);
+
+	agile_path_vertex bcmv = cmv; bcmv.weight = 6;
+	agile_path_vertex bdmv = dmv; bdmv.weight = 2;
+	agile_path_vertex bfmv = fmv; bfmv.weight = 4;
+	agile_graph_ins_edge(&graph, (void*)&bmv, (void*)&bcmv);
+	agile_graph_ins_edge(&graph, (void*)&bmv, (void*)&bdmv);
+	agile_graph_ins_edge(&graph, (void*)&bmv, (void*)&bfmv);
+
+	agile_path_vertex cemv = emv; cemv.weight = 4;
+	agile_path_vertex cfmv = fmv; cfmv.weight = 1;
+	agile_graph_ins_edge(&graph, (void*)&cmv, (void*)&cemv);
+	agile_graph_ins_edge(&graph, (void*)&cmv, (void*)&cfmv);
+
+	agile_path_vertex efmv = fmv; efmv.weight = 5;
+	agile_graph_ins_edge(&graph, (void*)&emv, (void*)&efmv);
+
+	agile_path_vertex fbmv = bmv; fbmv.weight = 2;
+	agile_path_vertex fdmv = dmv; fdmv.weight = 7;
+	agile_path_vertex femv = emv; femv.weight = 4;
+	agile_graph_ins_edge(&graph, (void*)&fmv, (void*)&fbmv);
+	agile_graph_ins_edge(&graph, (void*)&fmv, (void*)&fdmv);
+	agile_graph_ins_edge(&graph, (void*)&fmv, (void*)&femv);
+
+	agile_list paths;
+	int res = agile_shortest(&graph, &amv, &paths, shortest_vertex_match);
+	printf("res: %d\n", res);
+	shortest_print_list(&paths);
+
+	agile_graph_destroy(&graph);
+}
+
+void test_agile_graph_alg() {
+	test_agile_mst();
+	printf("\n");
+	test_agile_shortest();
 }
