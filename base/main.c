@@ -18,6 +18,7 @@
 #include "agile_bit.h"
 #include "agile_encrypt.h"
 #include "agile_graph_alg.h"
+#include "agile_geometry.h"
 
 int main() {
 	//test_agile_list();
@@ -38,7 +39,8 @@ int main() {
 	//test_agile_compress();
 	//test_agile_bit();
 	//test_agile_encrypt();
-	test_agile_graph_alg();
+	//test_agile_graph_alg();
+	test_agile_geometry();
 	return 0;
 }
 
