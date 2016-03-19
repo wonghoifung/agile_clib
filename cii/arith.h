@@ -1,5 +1,5 @@
-// #ifndef arith_header
-// #define arith_header
+#ifndef ARITH_HEADER
+#define ARITH_HEADER
 
 extern int Arith_max(int x, int y);
 extern int Arith_min(int x, int y);
@@ -8,4 +8,4 @@ extern int Arith_mod(int x, int y);
 extern int Arith_ceiling(int x, int y);
 extern int Arith_floor(int x, int y);
 
-// #endif
+#endif
