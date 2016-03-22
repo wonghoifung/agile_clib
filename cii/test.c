@@ -1,14 +1,25 @@
 // #include "arith.h"
 //#include "stack.h"
-#include "atom.h"
+//#include "atom.h"
+#include "except.h"
 #include <stdio.h>
+
+Except_T ee = { "hello exception" };
 
 int main() {
 
+	TRY		
+		RAISE(ee);
+	EXCEPT(ee)
+		printf("handled\n");
+	END_TRY;
+
+#if 0
 	const char* atom1 = Atom_string("hello");
 	const char* atom2 = Atom_int(12345);
 	printf("atom1:%s, atom2:%s\n", atom1, atom2);
 	printf("%d, %d\n", Atom_length(atom1), Atom_length(atom2));
+#endif
 
 #if 0
 	int x = -13;
