@@ -1,10 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#if 0
 #include "assert.h"
-#else
-#include <assert.h>
-#endif
 #include "except.h"
 
 #define T Except_T

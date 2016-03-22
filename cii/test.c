@@ -1,18 +1,24 @@
-// #include "arith.h"
-//#include "stack.h"
-//#include "atom.h"
+#include "arith.h"
+#include "stack.h"
+#include "atom.h"
 #include "except.h"
+#include "assert.h"
 #include <stdio.h>
 
 Except_T ee = { "hello exception" };
 
 int main() {
 
+	//(assert)(1 == 0);
+	assert(1 == 2);
+
+#if 0
 	TRY		
 		RAISE(ee);
 	EXCEPT(ee)
 		printf("handled\n");
 	END_TRY;
+#endif
 
 #if 0
 	const char* atom1 = Atom_string("hello");
