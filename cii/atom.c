@@ -2,14 +2,7 @@
 #include "atom.h"
 #include <string.h>
 #include "assert.h"
-#if 0
 #include "mem.h"
-#else
-#include <stdlib.h>
-#define NEW(p) ((p) = malloc((long)sizeof *(p)))
-#define FREE(p) ((void)(free(p), (p) = 0))
-#define ALLOC malloc
-#endif
 #include <limits.h>
 
 // macros
