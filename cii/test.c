@@ -1,17 +1,33 @@
-#include "arith.h"
-#include "stack.h"
-#include "atom.h"
-#include "except.h"
-#include "assert.h"
-#include "mem.h"
+// #include "arith.h"
+// #include "stack.h"
+// #include "atom.h"
+// #include "except.h"
+// #include "assert.h"
+// #include "mem.h"
+#include "arena.h"
 #include <stdio.h>
+#include <string.h>
 
-Except_T ee = { "hello exception" };
+// Except_T ee = { "hello exception" };
 
 int main() {
 
+	Arena_T arena = Arena_new();
+	
+	char* s1 = AALLOC(arena, 10);
+	memcpy(s1, "hello", 5);
+
+	char* s2 = AALLOC(arena, 10);
+	memcpy(s2, "world", 5);
+
+	printf("%s %s\n", s1, s2);
+
+	Arena_dispose(&arena);
+
+#if 0
 	char* buf = ALLOC(1024);
 	FREE(buf);
+#endif
 
 #if 0
 	//(assert)(1 == 0);
