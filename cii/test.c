@@ -3,14 +3,20 @@
 #include "atom.h"
 #include "except.h"
 #include "assert.h"
+#include "mem.h"
 #include <stdio.h>
 
 Except_T ee = { "hello exception" };
 
 int main() {
 
+	char* buf = ALLOC(1024);
+	FREE(buf);
+
+#if 0
 	//(assert)(1 == 0);
 	assert(1 == 2);
+#endif
 
 #if 0
 	TRY		
