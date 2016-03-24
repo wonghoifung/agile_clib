@@ -5,20 +5,56 @@
 // #include "assert.h"
 // #include "mem.h"
 // #include "arena.h"
-#include "list.h"
+// #include "list.h"
+#include <stdlib.h>
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
+#include "atom.h"
+#include "table.h"
+#include "mem.h"
+#include "getword.h"
 
 // Except_T ee = { "hello exception" };
 
-void print(void** x, void* cl) {
-	char** str = (char**)x;
-	FILE* fp = cl;
-	fprintf(fp, "%s\n", *str);
+// void print(void** x, void* cl) {
+// 	char** str = (char**)x;
+// 	FILE* fp = cl;
+// 	fprintf(fp, "%s\n", *str);
+// }
+
+void wf(char* name, FILE* fp) {
+	Table_T table = Table_new(0, NULL, NULL);
+	char buf[128];
+	while (getword(fp, buf, sizeof buf, first, rest)) {
+		// TODO
+	}
+	if (name)
+		printf("%s:\n", name);
+	{
+		// print the words
+	}
+	// deallocate the entries and table
 }
 
 int main() {
 
+	int i;
+	for (i=1; i<argc; ++i) {
+		FILE* fp = fopen(argv[i],"r");
+		if (fp==NULL) {
+			fprintf(stderr, "%s: can't open '%s' (%s)\n", argv[0], argv[i], strerror(errno));
+			return EXIT_FAILURE;
+		} else {
+			wf(argv[i], fp);
+			fclose(fp);
+		}
+	}
+	if (argc==1) wf(NULL, stdin);
+	return EXIT_SUCCESS;
+
+#if 0
 	List_T p1, p2;
 	p1 = List_list(NULL);
 	p2 = List_list("Atom", "Mem", "Arena", "List", NULL);
@@ -28,6 +64,7 @@ int main() {
 	List_map(p2, print, stderr);
 	List_free(&p1);
 	List_free(&p2);
+#endif
 
 #if 0
 	Arena_T arena = Arena_new();
