@@ -26,6 +26,8 @@ int main() {
 	p2 = List_append(p2, List_list("Except", NULL));
 	printf("\n");
 	List_map(p2, print, stderr);
+	List_free(&p1);
+	List_free(&p2);
 
 #if 0
 	Arena_T arena = Arena_new();
