@@ -4,14 +4,30 @@
 // #include "except.h"
 // #include "assert.h"
 // #include "mem.h"
-#include "arena.h"
+// #include "arena.h"
+#include "list.h"
 #include <stdio.h>
 #include <string.h>
 
 // Except_T ee = { "hello exception" };
 
+void print(void** x, void* cl) {
+	char** str = (char**)x;
+	FILE* fp = cl;
+	fprintf(fp, "%s\n", *str);
+}
+
 int main() {
 
+	List_T p1, p2;
+	p1 = List_list(NULL);
+	p2 = List_list("Atom", "Mem", "Arena", "List", NULL);
+	List_map(p2, print, stderr);
+	p2 = List_append(p2, List_list("Except", NULL));
+	printf("\n");
+	List_map(p2, print, stderr);
+
+#if 0
 	Arena_T arena = Arena_new();
 	
 	char* s1 = AALLOC(arena, 10);
@@ -23,6 +39,7 @@ int main() {
 	printf("%s %s\n", s1, s2);
 
 	Arena_dispose(&arena);
+#endif
 
 #if 0
 	char* buf = ALLOC(1024);
