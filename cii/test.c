@@ -24,18 +24,49 @@
 // 	fprintf(fp, "%s\n", *str);
 // }
 
+int first(int c) { return isalpha(c); }
+
+int rest(int c) { return isalpha(c) || c=='_'; }
+
+int compare(const void* x, const void* y) { return strcmp(*(char**)x, *(char**)y); }
+
+void vfree(const void* key, void** count, void* cl) { FREE(*count); }
+
 void wf(char* name, FILE* fp) {
 	Table_T table = Table_new(0, NULL, NULL);
 	char buf[128];
 	while (getword(fp, buf, sizeof buf, first, rest)) {
-		// TODO
+		const char* word;
+		int i, *count;
+		for (i = 0; buf[i] != '\0'; i++)
+			buf[i] = tolower(buf[i]);
+		word = Atom_string(buf);
+		count = Table_get(table, word);
+		if (count)
+			(*count)++;
+		else {
+			NEW(count);
+			*count = 1;
+			Table_put(table, word, count);
+		}
 	}
+	
 	if (name)
 		printf("%s:\n", name);
+
 	{
 		// print the words
+		int i;
+		void** array = Table_toArray(table, NULL);
+		qsort(array, Table_length(table), 2 * sizeof (*array), compare);
+		for (i=0; array[i]; i+=2)
+			printf("%d\t%s\n", *(int*)array[i+1], (char*)array[i]);
+		FREE(array);
 	}
+
 	// deallocate the entries and table
+	Table_map(table, vfree, NULL);
+	Table_free(&table);
 }
 
 int main() {
