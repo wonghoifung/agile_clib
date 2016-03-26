@@ -69,7 +69,7 @@ void wf(char* name, FILE* fp) {
 	Table_free(&table);
 }
 
-int main() {
+int main(int argc, char** argv) {
 
 	int i;
 	for (i=1; i<argc; ++i) {
