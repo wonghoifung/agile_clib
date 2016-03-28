@@ -58,3 +58,27 @@ int Set_member(T set, const void* member) {
 
 	return p != NULL;
 }
+
+void Set_put(T set, const void* member) {
+	int i;
+	struct member* p;
+	assert(set);
+	assert(member);
+
+	// search set for member
+	i = (*set->hash)(member) % set->size;
+	for (p=set->buckets[i]; p; p=p->link)
+		if ((*set->cmp)(member, p->member) == 0) break;
+
+	if (p == NULL) {
+		// add member to set
+		NEW(p);
+		p->member = member;
+		p->link = set->buckets[i];
+		set->buckets[i] = p;
+		set->length++;
+	} else {
+		p->member = member;
+	}
+	set->timestamp++;
+}
