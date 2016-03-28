@@ -231,3 +231,37 @@ T Set_inter(T s, T t) {
 		return set;
 	}
 }
+
+T Set_minus(T t, T s) {
+	if (t == NULL) {
+		assert(s);
+		return Set_new(s->size, s->cmp, s->hash);
+	} else if (s == NULL) {
+		return copy(t, t->size);
+	} else {
+		T set = Set_new(Arith_min(s->size, t->size), s->cmp, s->hash);
+		assert(s->cmp == t->cmp && s->hash == t->hash);
+		{
+			// for each member q in t
+			int i;
+			struct member* q;
+			for (i=0; i<t->size; i++)
+				for (q=t->buckets[i]; q; q=q->link)
+
+					if (!Set_member(s, q->member))
+					// add q->member to set
+					{
+						struct member* p;
+						const void* member = q->member;
+						int i = (*set->hash)(member) % set->size;
+						// add member to set
+						NEW(p);
+						p->member = member;
+						p->link = set->buckets[i];
+						set->buckets[i] = p;
+						set->length++;
+					}
+		}
+		return set;
+	}
+}
