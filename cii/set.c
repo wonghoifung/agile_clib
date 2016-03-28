@@ -134,3 +134,16 @@ void Set_map(T set, void apply(const void* member, void* cl), void* cl) {
 			assert(set->timestamp == stamp);
 		}
 }
+
+void** Set_toArray(T set, void* end) {
+	int i, j = 0;
+	void** array;
+	struct member* p;
+	assert(set);
+	array = ALLOC((set->length + 1) * sizeof (*array));
+	for (i=0; i<set->size; i++)
+		for (p=set->buckets[i]; p; p=p->link) 
+			array[j++] = (void*)p->member;
+	array[j] = end;
+	return array;
+}
