@@ -21,6 +21,9 @@ struct T {
 };
 
 // static functions
+static int cmpatom(const void* x, const void* y) { return x != y; }
+
+static unsigned hashatom(const void* x) { return (unsigned long)x >> 2; }
 
 // functions
 T Set_new(int hint, int cmp(const void* x, const void* y), unsigned hash(const void* x)) {
@@ -40,4 +43,18 @@ T Set_new(int hint, int cmp(const void* x, const void* y), unsigned hash(const v
 	set->length = 0;
 	set->timestamp = 0;
 	return set;
+}
+
+int Set_member(T set, const void* member) {
+	int i;
+	struct member* p;
+	assert(set);
+	assert(member);
+
+	// search set for member
+	i = (*set->hash)(member) % set->size;
+	for (p=set->buckets[i]; p; p=p->link)
+		if ((*set->cmp)(member, p->member) == 0) break;
+
+	return p != NULL;
 }
