@@ -120,3 +120,17 @@ void Set_free(T* set) {
 	}
 	FREE(*set);
 }
+
+void Set_map(T set, void apply(const void* member, void* cl), void* cl) {
+	int i;
+	unsigned stamp;
+	struct member* p;
+	assert(set);
+	assert(apply);
+	stamp = set->timestamp;
+	for (i=0; i<set->size; i++)
+		for (p=set->buckets[i]; p; p=p->link) {
+			apply(p->member, cl);
+			assert(set->timestamp == stamp);
+		}
+}
