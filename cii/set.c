@@ -82,3 +82,22 @@ void Set_put(T set, const void* member) {
 	}
 	set->timestamp++;
 }
+
+void* Set_remove(T set, const void* member) {
+	int i;
+	struct member** pp;
+	assert(set);
+	assert(member);
+	set->timestamp++;
+	i = (*set->hash)(member) % set->size;
+	for (pp=&set->buckets[i]; *pp; pp=&(*pp)->link)
+		if ((*set->cmp)(member, (*pp)->member) == 0) {
+			struct member* p = *pp;
+			*pp = p->link;
+			member = p->member;
+			FREE(p);
+			set->length--;
+			return (void*)member;
+		}
+	return NULL;
+}
