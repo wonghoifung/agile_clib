@@ -265,3 +265,68 @@ T Set_minus(T t, T s) {
 		return set;
 	}
 }
+
+// symmetric difference, (s-t)+(t-s)
+T Set_diff(T s, T t) {
+	if (s == NULL) {
+		assert(t);
+		return copy(t, t->size);
+	} else if (t == NULL) {
+		return copy(s, s->size);
+	} else {
+		T set = Set_new(Arith_min(s->size, t->size), s->cmp, s->hash);
+		assert(s->cmp == t->cmp && s->hash == t->hash);
+
+		{
+			// for each member q in t
+			int i;
+			struct member* q;
+			for (i=0; i<t->size; i++)
+				for (q=t->buckets[i]; q; q=q->link)
+
+					if (!Set_member(s, q->member))
+					// add q->member to set
+					{
+						struct member* p;
+						const void* member = q->member;
+						int i = (*set->hash)(member) % set->size;
+						// add member to set
+						NEW(p);
+						p->member = member;
+						p->link = set->buckets[i];
+						set->buckets[i] = p;
+						set->length++;
+					}
+		}
+
+		{
+			T u = t; 
+			t = s;
+			s = u;
+		}
+
+		{
+			// for each member q in t
+			int i;
+			struct member* q;
+			for (i=0; i<t->size; i++)
+				for (q=t->buckets[i]; q; q=q->link)
+
+					if (!Set_member(s, q->member))
+					// add q->member to set
+					{
+						struct member* p;
+						const void* member = q->member;
+						int i = (*set->hash)(member) % set->size;
+						// add member to set
+						NEW(p);
+						p->member = member;
+						p->link = set->buckets[i];
+						set->buckets[i] = p;
+						set->length++;
+					}
+		}
+
+		return set;
+	}
+}
