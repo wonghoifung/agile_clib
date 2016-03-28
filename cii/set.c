@@ -25,6 +25,32 @@ static int cmpatom(const void* x, const void* y) { return x != y; }
 
 static unsigned hashatom(const void* x) { return (unsigned long)x >> 2; }
 
+static T copy(T t, int hint) {
+	T set;
+	assert(t);
+	set = Set_new(hint, t->cmp, t->hash);
+	{
+		// for each member q in t
+		int i;
+		struct member* q;
+		for (i=0; i<t->size; i++)
+			for (q=t->buckets[i]; q; q=q->link)
+			// add q->member to set
+			{
+				struct member* p;
+				const void* member = q->member;
+				int i = (*set->hash)(member) % set->size;
+				// add member to set
+				NEW(p);
+				p->member = member;
+				p->link = set->buckets[i];
+				set->buckets[i] = p;
+				set->length++;
+			}
+	}
+	return set;
+}
+
 // functions
 T Set_new(int hint, int cmp(const void* x, const void* y), unsigned hash(const void* x)) {
 	T set;
@@ -146,4 +172,26 @@ void** Set_toArray(T set, void* end) {
 			array[j++] = (void*)p->member;
 	array[j] = end;
 	return array;
+}
+
+T Set_union(T s, T t) {
+	if (s == NULL) {
+		assert(t);
+		return copy(t, t->size);
+	} else if (t == NULL) {
+		return copy(s, s->size);
+	} else {
+		T set = copy(s, Arith_max(s->size, t->size));
+		assert(s->cmp==t->cmp && s->hash==t->hash);
+		{
+			// for each member q in t
+			int i;
+			struct member* q;
+			for (i=0; i<t->size; i++)
+				for (q=t->buckets[i]; q; q=q->link)
+
+					Set_put(set, q->member);
+		}
+		return set;
+	}
 }
