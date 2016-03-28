@@ -101,3 +101,22 @@ void* Set_remove(T set, const void* member) {
 		}
 	return NULL;
 }
+
+int Set_length(T set) {
+	assert(set);
+	return set->length;
+}
+
+void Set_free(T* set) {
+	assert(set && *set);
+	if ((*set)->length > 0) {
+		int i;
+		struct member *p, *q;
+		for (i=0; i<(*set)->size; i++)
+			for (p=(*set)->buckets[i]; p; p=q) {
+				q = p->link;
+				FREE(p);
+			}
+	}
+	FREE(*set);
+}
