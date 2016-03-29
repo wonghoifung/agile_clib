@@ -39,7 +39,7 @@ void Ring_free(T* ring) {
 	if ((p=(*ring)->head) != NULL) {
 		int n = (*ring)->length;
 		for (; n-- > 0; p = q) {
-			q = p->link;
+			q = p->rlink;
 			FREE(p);
 		}
 	}
@@ -159,4 +159,122 @@ void* Ring_add(T ring, int pos, void* x) {
 	}
 }
 
+void* Ring_remove(T ring, int i) {
+	void* x;
+	struct node* q;
+	assert(ring);
+	assert(ring->length > 0);
+	assert(i >= 0 && i < ring->length);
+
+	// q <- ith node
+	{
+		int n;
+		q = ring->head;
+		if (i <= ring->length / 2)
+			for (n = i; n-- > 0; )
+				q = q->rlink;
+		else 
+			for (n = ring->length - i; n-- > 0; )
+				q = q->llink;
+	}
+
+	if (i == 0)
+		ring->head = ring->head->rlink;
+
+	x = q->value;
+
+	// delete node q
+	q->llink->rlink = q->rlink;
+	q->rlink->llink = q->llink;
+	FREE(q);
+	if (--ring->length == 0)
+		ring->head = NULL;
+
+	return x;
+}
+
+void* Ring_remhi(T ring) {
+	void* x;
+	struct node* q;
+	assert(ring);
+	assert(ring->length > 0);
+	q = ring->head->llink;
+	x = q->value;
+
+	// delete node q
+	q->llink->rlink = q->rlink;
+	q->rlink->llink = q->llink;
+	FREE(q);
+	if (--ring->length == 0)
+		ring->head = NULL;
+
+	return x;
+}
+
+void* Ring_remlo(T ring) {
+	assert(ring);
+	assert(ring->length > 0);
+	ring->head = ring->head->rlink;
+	return Ring_remhi(ring);
+}
+
+void Ring_rotate(T ring, int n) {
+	struct node* q;
+	int i;
+	assert(ring);
+	assert(n >= -ring->length && n <= ring->length);
+	if (n >= 0)
+		i = n % ring->length;
+	else
+		i = n + ring->length;
+
+	// q <- ith node
+	{
+		int n;
+		q = ring->head;
+		if (i <= ring->length / 2)
+			for (n = i; n-- > 0; )
+				q = q->rlink;
+		else 
+			for (n = ring->length - i; n-- > 0; )
+				q = q->llink;
+	}
+
+	ring->head = q;
+}
+
+#include <stdio.h>
+
+void test_ring() {
+	Ring_T ring = Ring_ring("a", "b", "c", "d", "hello", "world", NULL);
+	int i;
+
+	for (i=0; i<Ring_length(ring); i++) {
+		printf("%s ", Ring_get(ring, i));
+	}
+	printf("\n");
+
+	Ring_add(ring, -2, "xxx");
+
+	for (i=0; i<Ring_length(ring); i++) {
+		printf("%s ", Ring_get(ring, i));
+	}
+	printf("\n");
+
+	Ring_remove(ring, 4);
+
+	for (i=0; i<Ring_length(ring); i++) {
+		printf("%s ", Ring_get(ring, i));
+	}
+	printf("\n");
+
+	Ring_rotate(ring, 4);
+
+	for (i=0; i<Ring_length(ring); i++) {
+		printf("%s ", Ring_get(ring, i));
+	}
+	printf("\n");
+
+	Ring_free(&ring);
+}
 

@@ -25,4 +25,6 @@ extern void Ring_rotate(T ring, int n);
 
 #undef T
 
+void test_ring();
+
 #endif
