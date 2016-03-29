@@ -114,4 +114,49 @@ void* Ring_addhi(T ring, void* x) {
 	return p->value = x;
 }
 
+void* Ring_addlo(T ring, void* x) {
+	assert(ring);
+	Ring_addhi(ring, x);
+	ring->head = ring->head->llink;
+	return x;
+}
+
+void* Ring_add(T ring, int pos, void* x) {
+	assert(ring);
+	assert(pos >= -ring->length && pos <= ring->length + 1);
+	if (pos == 1 || pos == -ring->length) {
+		return Ring_addlo(ring, x);
+	}
+	else if (pos == 0 || pos == ring->length + 1) {
+		return Ring_addhi(ring ,x);
+	}
+	else {
+		struct node *p, *q;
+		int i = pos < 0 ? pos + ring->length : pos - 1;
+
+		// q <- ith node
+		{
+			int n;
+			q = ring->head;
+			if (i <= ring->length / 2)
+				for (n = i; n-- > 0; )
+					q = q->rlink;
+			else 
+				for (n = ring->length - i; n-- > 0; )
+					q = q->llink;
+		}
+
+		NEW(p);
+
+		// insert p to the left of q
+		p->llink = q->llink;
+		q->llink->rlink = p;
+		p->rlink = q;
+		q->llink = p;
+
+		ring->length++;
+		return p->value = x;
+	}
+}
+
 
