@@ -19,6 +19,7 @@ struct T {
 
 // static data
 unsigned char msbmask[] = {0xFF, 0xFE, 0xFC, 0xF8, 0xF0, 0xE0, 0xC0, 0x80};
+unsigned char lsbmask[] = {0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF};
 
 // static functions
 
@@ -85,12 +86,69 @@ void Bit_set(T set, int lo, int hi) {
 
 	if (lo / 8 < hi / 8) {
 		// set the most significant bits in byte lo / 8
+		set->bytes[lo / 8] |= msbmask[lo % 8];
 
 		// set all the bits in bytes lo / 8 + 1 .. hi / 8 - 1
+		{
+			int i;
+			for (i = lo / 8 + 1; i < hi / 8; i++)
+				set->bytes[i] = 0xFF;
+		}
 
 		// set the least significant bits in byte hi / 8
+		set->bytes[hi / 8] |= lsbmask[hi % 8];
 	} else {
 		// set bits lo % 8 .. hi % 8 in byte lo / 8
+		set->bytes[lo / 8] |= /* mask for bits lo % 8 .. hi % 8*/(msbmask[lo % 8] & lsbmask[hi % 8]);
 	}
+}
+
+void Bit_clear(T set, int lo, int hi) {
+	// check set, lo, and hi
+	assert(set);
+	assert(0 <= lo && hi < set->length);
+	assert(lo <= hi);
+
+	if (lo / 8 < hi / 8) {
+		set->bytes[lo / 8] &= ~msbmask[lo % 8];
+
+		{
+			int i;
+			for (i = lo / 8 + 1; i < hi / 8; i++)
+				set->bytes[i] = 0;
+		}
+		
+		set->bytes[hi / 8] &= ~lsbmask[hi % 8];
+	} else {
+		set->bytes[lo / 8] &= ~(msbmask[lo % 8] & lsbmask[hi % 8]);
+	}
+}
+
+void Bit_not(T set, int lo, int hi) {
+	// check set, lo, and hi
+	assert(set);
+	assert(0 <= lo && hi < set->length);
+	assert(lo <= hi);
+
+	if (lo / 8 < hi / 8) {
+		set->bytes[lo / 8] ^= msbmask[lo % 8];
+
+		{
+			int i;
+			for (i = lo / 8 + 1; i < hi / 8; i++)
+				set->bytes[i] ^= 0xFF;
+		}
+		
+		set->bytes[hi / 8] ^= lsbmask[hi % 8];
+	} else {
+		set->bytes[lo / 8] ^= (msbmask[lo % 8] & lsbmask[hi % 8]);
+	}
+}
+
+void Bit_map(T set, void apply(int n, int bit, void* cl), void* cl) {
+	int n;
+	assert(set);
+	for (n = 0; n < set->length; n++)
+		apply(n, ((set->bytes[n / 8] >> (n % 8)) & 1), cl);
 }
 
