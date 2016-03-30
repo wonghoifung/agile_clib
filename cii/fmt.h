@@ -23,8 +23,10 @@ extern char* Fmt_string(const char* fmt, ...);
 extern char* Fmt_vstring(const char* fmt, va_list ap);
 extern T Fmt_register(int code, T cvt);
 extern void Fmt_putd(const char* str, int len, int put(int c, void* cl), void* cl, unsigned char flags[256], int width, int precision);
-extern void Fmt_puts(cosnt char* str, int len, int put(int c, void* cl), void* cl, unsigned char flags[256], int width, int precision);
+extern void Fmt_puts(const char* str, int len, int put(int c, void* cl), void* cl, unsigned char flags[256], int width, int precision);
 
 #undef T
+
+void test_fmt();
 
 #endif
