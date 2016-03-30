@@ -364,7 +364,15 @@ void Fmt_vfmt(int put(int c, void* cl), void* cl, const char* fmt, va_list ap) {
 			c = *fmt++;
 			assert(cvt[c]);
 
+			printf("\nlook up table for %c\n", c);
+
+			// va_list apcopy;
+			// va_copy(apcopy, ap);
+			// (*cvt[c])(c, &apcopy, put, cl, flags, width, precision);
+			// va_end(apcopy);
+
 			//(*cvt[c])(c, &ap, put, cl, flags, width, precision);
+
 			(*cvt[c])(c, (va_list*)(ap), put, cl, flags, width, precision); // TODO 64bits
 			// http://stackoverflow.com/questions/8047362/is-gcc-mishandling-a-pointer-to-a-va-list-passed-to-a-function
 		}
@@ -454,6 +462,6 @@ void Fmt_putd(const char* str, int len, int put(int c, void* cl), void* cl, unsi
 
 void test_fmt() {
 	int d = 1;
-	Fmt_print("%.5d\n", d); 
+	Fmt_print("%.5d %s %f\n", d, "hello", 3.14); 
 }
 
