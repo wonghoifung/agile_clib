@@ -152,3 +152,33 @@ void Bit_map(T set, void apply(int n, int bit, void* cl), void* cl) {
 		apply(n, ((set->bytes[n / 8] >> (n % 8)) & 1), cl);
 }
 
+int Bit_eq(T s, T t) {
+	int i;
+	assert(s && t);
+	assert(s->length == t->length);
+	for (i = nwords(s->length); --i >= 0; ) 
+		if (s->words[i] != t->words[i]) return 0;
+	return 1;
+}
+
+int Bit_leq(T s, T t) {
+	int i;
+	assert(s && t);
+	assert(s->length == t->length);
+	for (i = nwords(s->length); --i >= 0; )
+		if ((s->words[i] & ~t->words[i]) != 0) return 0;
+	return 1;
+}
+
+int Bit_lt(T s, T t) {
+	int i, lt = 0;
+	assert(s && t);
+	assert(s->length == t->length);
+	for (i = nwords(s->length); --i >= 0; )
+		if ((s->words[i] & ~t->words[i]) != 0) 
+			return 0;
+		else if (s->words[i] != t->words[i]) 
+			lt |= 1;
+	return lt;
+}
+
