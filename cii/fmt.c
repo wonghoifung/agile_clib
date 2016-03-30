@@ -455,6 +455,7 @@ void Fmt_putd(const char* str, int len, int put(int c, void* cl), void* cl, unsi
 }
 
 void test_fmt() {
-	Fmt_print("%d", 1);
+	int d = 1;
+	Fmt_print("%d", d); // TODO crash
 }
 
