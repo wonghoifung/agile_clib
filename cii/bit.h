@@ -26,4 +26,6 @@ extern T Bit_diff(T s, T t);
 
 #undef T
 
+void test_bit();
+
 #endif

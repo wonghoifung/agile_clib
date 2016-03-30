@@ -219,3 +219,19 @@ T Bit_diff(T s, T t) {
 	setop(Bit_new(s->length), copy(t), copy(s), ^)
 }
 
+#include <stdio.h>
+void test_bit() {
+	Bit_T bitset = Bit_new(20);
+	
+	printf("%d\n", Bit_get(bitset, 5));
+	Bit_put(bitset, 5, 1);
+	printf("%d\n", Bit_get(bitset, 5));
+	Bit_clear(bitset, 5, 5);
+	printf("%d\n", Bit_get(bitset, 5));
+
+	Bit_put(bitset, 5, 1);
+	Bit_put(bitset, 9, 1);
+	printf("%d\n", Bit_count(bitset));
+
+	Bit_free(&bitset);
+}
