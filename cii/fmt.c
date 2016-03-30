@@ -371,10 +371,12 @@ void Fmt_vfmt(int put(int c, void* cl), void* cl, const char* fmt, va_list ap) {
 			// (*cvt[c])(c, &apcopy, put, cl, flags, width, precision);
 			// va_end(apcopy);
 
-			//(*cvt[c])(c, &ap, put, cl, flags, width, precision);
-
-			(*cvt[c])(c, (va_list*)(ap), put, cl, flags, width, precision); // TODO 64bits
+#ifdef __i386__
+			(*cvt[c])(c, &ap, put, cl, flags, width, precision);
+#elif __x86_64__
+			(*cvt[c])(c, (va_list*)(ap), put, cl, flags, width, precision);
 			// http://stackoverflow.com/questions/8047362/is-gcc-mishandling-a-pointer-to-a-va-list-passed-to-a-function
+#endif
 		}
 }
 
