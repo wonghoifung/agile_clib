@@ -39,7 +39,7 @@ static void cvt_d(int code, va_list* app, int put(int c, void* cl), void* cl, un
 
 	int val = va_arg(*app, int);
 
-	//printf("val:%d\n", val);
+	printf("val:%d\n", val);
 	
 	// unsigned: cope with the asymmetrical range of two's complement numbers
 	//           and with the ambiguities of C's division and modulus operators
@@ -367,8 +367,9 @@ void Fmt_vfmt(int put(int c, void* cl), void* cl, const char* fmt, va_list ap) {
 
 			c = *fmt++;
 			assert(cvt[c]);
-			//printf("look up table with %c\n", c);
-			(*cvt[c])(c, &ap, put, cl, flags, width, precision);
+
+			printf("look up table with %c\n", c);
+			(*cvt[c])(c, (va_list*)&ap, put, cl, flags, width, precision);
 		}
 }
 
