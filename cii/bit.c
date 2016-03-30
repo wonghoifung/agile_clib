@@ -17,11 +17,32 @@ struct T {
 #define nwords(len) ((((len) + BPW - 1) & (~(BPW - 1))) / BPW)
 #define nbytes(len) ((((len) + 8 - 1) & (~(8 - 1))) / 8)
 
+#define setop(sequal, snull, tnull, op) \
+	if (s == t) {assert(s); return sequal;} \
+	else if (s == NULL) {assert(t); return snull;} \
+	else if (t == NULL) {return tnull;} \
+	else { \
+		int i; T set; \
+		assert(s->length == t->length); \
+		set = Bit_new(s->length); \
+		for (i = nwords(s->length); --i >= 0; ) \
+			set->words[i] = s->words[i] op t->words[i]; \
+		return set; \
+	}
+
 // static data
 unsigned char msbmask[] = {0xFF, 0xFE, 0xFC, 0xF8, 0xF0, 0xE0, 0xC0, 0x80};
 unsigned char lsbmask[] = {0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF};
 
 // static functions
+static T copy(T t) {
+	T set;
+	assert(t);
+	set = Bit_new(t->length);
+	if (t->length > 0)
+		memcpy(set->bytes, t->bytes, nbytes(t->length));
+	return set;
+}
 
 // functions
 T Bit_new(int length) {
@@ -180,5 +201,21 @@ int Bit_lt(T s, T t) {
 		else if (s->words[i] != t->words[i]) 
 			lt |= 1;
 	return lt;
+}
+
+T Bit_union(T s, T t) {
+	setop(copy(t), copy(t), copy(s), |)
+}
+
+T Bit_inter(T s, T t) {
+	setop(copy(t), Bit_new(t->length), Bit_new(s->length), &)
+}
+
+T Bit_minus(T s, T t) {
+	setop(Bit_new(s->length), Bit_new(t->length), copy(s), & ~)
+}
+
+T Bit_diff(T s, T t) {
+	setop(Bit_new(s->length), copy(t), copy(s), ^)
 }
 
