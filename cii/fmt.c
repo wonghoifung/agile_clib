@@ -364,13 +364,6 @@ void Fmt_vfmt(int put(int c, void* cl), void* cl, const char* fmt, va_list ap) {
 			c = *fmt++;
 			assert(cvt[c]);
 
-			printf("\nlook up table for %c\n", c);
-
-			// va_list apcopy;
-			// va_copy(apcopy, ap);
-			// (*cvt[c])(c, &apcopy, put, cl, flags, width, precision);
-			// va_end(apcopy);
-
 #ifdef __i386__
 			(*cvt[c])(c, &ap, put, cl, flags, width, precision);
 #elif __x86_64__
