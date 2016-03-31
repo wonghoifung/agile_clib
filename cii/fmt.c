@@ -36,7 +36,7 @@ static void cvt_s(int code, va_list* app, int put(int c, void* cl), void* cl, un
 
 static void cvt_d(int code, va_list* app, int put(int c, void* cl), void* cl, unsigned char flags[], int width, int precision) {
 	int val = va_arg(*app, int);
-	
+
 	// unsigned: cope with the asymmetrical range of two's complement numbers
 	//           and with the ambiguities of C's division and modulus operators
 	unsigned m; 
@@ -367,6 +367,11 @@ void Fmt_vfmt(int put(int c, void* cl), void* cl, const char* fmt, va_list ap) {
 #ifdef __i386__
 			(*cvt[c])(c, &ap, put, cl, flags, width, precision);
 #elif __x86_64__
+			// {
+			// 	int dd = va_arg(*(va_list*)ap, int);
+			// 	printf("dd:%d\n", dd);
+			// 	return;
+			// }
 			(*cvt[c])(c, (va_list*)(ap), put, cl, flags, width, precision);
 			// http://stackoverflow.com/questions/8047362/is-gcc-mishandling-a-pointer-to-a-va-list-passed-to-a-function
 #endif
@@ -456,7 +461,7 @@ void Fmt_putd(const char* str, int len, int put(int c, void* cl), void* cl, unsi
 }
 
 void test_fmt() {
-	int d = 1;
+	int d = 7;
 	Fmt_print("%.5d %s %f\n", d, "hello", 3.14); 
 }
 
