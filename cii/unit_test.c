@@ -2,12 +2,14 @@
 // #include "seq.h"
 // #include "ring.h"
 // #include "bit.h"
-#include "fmt.h"
+// #include "fmt.h"
+#include "text.h"
 
 int main() {
 	// test_array();
 	// test_seq();
 	// test_ring();
 	// test_bit();
-	test_fmt();
+	// test_fmt();
+	test_text();
 }
