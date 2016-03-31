@@ -164,3 +164,143 @@ int Str_cmp(const char* s1, int i1, int j1, const char* s2, int i2, int j2) {
 		return strncmp(s1, s2, j1 - i1);
 	}
 }
+
+int Str_chr(const char* s, int i, int j, int c) {
+	convert(s, i, j);
+	for (; i < j; i++)
+		if (s[i] == c) return i + 1;
+	return 0;
+}
+
+int Str_rchr(const char* s, int i, int j, int c) {
+	convert(s, i, j);
+	while (j > i)
+		if (s[--j] == c) return j + 1;
+	return 0;
+}
+
+int Str_upto(const char* s, int i, int j, const char* set) {
+	assert(set);
+	convert(s, i, j);
+	for (; i < j; i++)
+		if (strchr(set, s[i])) return i + 1;
+	return 0;
+}
+
+int Str_rupto(const char* s, int i, int j, const char* set) {
+	assert(set);
+	convert(s, i, j);
+	while (j > i)
+		if (strchr(set, s[--j])) return j + 1;
+	return 0;
+}
+
+int Str_find(const char* s, int i, int j, const char* str) {
+	int len;
+	convert(s, i, j);
+	assert(str);
+	len = strlen(str);
+	if (len == 0) {
+		return i + 1;
+	} else if (len == 1) {
+		for (; i < j; i++)
+			if (s[i] == *str) return i + 1;
+	} else {
+		for (; i + len <= j; i++)
+			if (/*s[i...] <=> str[0..len-1]*/(strncmp(&s[i], str, len) == 0)) return i + 1;
+	}
+	return 0;
+}
+
+int Str_rfind(const char* s, int i, int j, const char* str) {
+	int len;
+	convert(s, i, j);
+	assert(str);
+	len = strlen(str);
+	if (len == 0) {
+		return j + 1;
+	} else if (len == 1) {
+		while (j > i)
+			if (s[--j] == *str) return j + 1;
+	} else {
+		for (; j - len >= i; j--)
+			if (strncmp(&s[j-len], str, len) == 0) return j - len + 1;
+	}
+	return 0;
+}
+
+int Str_any(const char* s, int i, const char* set) {
+	int len;
+	assert(s);
+	assert(set);
+	len = strlen(s);
+	i = idx(i,len);
+	assert(i >= 0 && i <= len);
+	if (i < len && strchr(set, s[i])) return i + 2;
+	return 0;
+}
+
+int Str_many(const char* s, int i, int j, const char* set) {
+	assert(set);
+	convert(s, i, j);
+	if (i < j && strchr(set, s[i])) {
+		do 
+			i++;
+		while (i < j && strchr(set, s[i]));
+		return i + 1;
+	}
+	return 0;
+}
+
+int Str_rmany(const char* s, int i, int j, const char* set) {
+	assert(set);
+	convert(s, i, j);
+	if (j > i && strchr(set, s[j - 1])) {
+		do
+			--j;
+		while (j >= i && strchr(set, s[j]));
+		return j + 2;
+	}
+	return 0;
+}
+
+int Str_match(const char* s, int i, int j, const char* str) {
+	int len;
+	convert(s, i, j);
+	assert(str);
+	len = strlen(str);
+	if (len == 0) {
+		return i + 1;
+	} else if (len == 1) {
+		if (i < j && s[i] == *str) return i + 2;
+	} else if (i + len <= j && strncmp(&s[i], str, len) == 0) {
+		return i + len + 1;
+	}
+	return 0;
+}
+
+int Str_rmatch(const char* s, int i, int j, const char* str) {
+	int len;
+	convert(s, i, j);
+	assert(str);
+	len = strlen(str);
+	if (len == 0) {
+		return j + 1;
+	} else if (len == 1) {
+		if (j > i && s[j - 1] == *str) return j;
+	} else if (j - len >= i && strncmp(&s[j-len], str, len) == 0) {
+		return j - len + 1;
+	}
+	return 0;
+}
+
+void Str_fmt(int code, va_list* app, int put(int c, void* cl), void* cl, unsigned char flags[], int width, int precision) {
+	char* s;
+	int i, j;
+	assert(app && flags);
+	s = va_arg(*app, char*);
+	i = va_arg(*app, int);
+	j = va_arg(*app, int);
+	convert(s, i, j);
+	Fmt_puts(s + i, j - i, put, cl, flags, width, precision);
+}

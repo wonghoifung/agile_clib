@@ -17,5 +17,5 @@ int main(int argc, char* argv[]) {
 			i = j;
 		}
 	}
-	return EXIT_SUCESS;
+	return EXIT_SUCCESS;
 }
