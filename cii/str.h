@@ -29,6 +29,7 @@ extern int Str_many(const char* s, int i, int j, const char* set);
 extern int Str_rmany(const char* s, int i, int j, const char* set);
 extern int Str_match(const char* s, int i, int j, const char* str);
 extern int Str_rmatch(const char* s, int i, int j, const char* str);
+extern void Str_fmt(int code, va_list* app, int put(int c, void* cl), void* cl, unsigned char flags[], int width, int precision);
 
 #undef T
 
