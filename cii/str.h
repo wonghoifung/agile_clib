@@ -3,6 +3,7 @@
 
 #include <stdarg.h>
 
+// positions:
 // 1 2  3  4  5  6
 //  i  n  t  e  r
 //-5 -4 -3 -2 -1 0
@@ -23,6 +24,11 @@ extern int Str_upto(const char* s, int i, int j, const char* set);
 extern int Str_rupto(const char* s, int i, int j, const char* set);
 extern int Str_find(const char* s, int i, int j, const char* str);
 extern int Str_rfind(const char* s, int i, int j, const char* str);
+extern int Str_any(const char* s, int i, const char* set);
+extern int Str_many(const char* s, int i, int j, const char* set);
+extern int Str_rmany(const char* s, int i, int j, const char* set);
+extern int Str_match(const char* s, int i, int j, const char* str);
+extern int Str_rmatch(const char* s, int i, int j, const char* str);
 
 #undef T
 
