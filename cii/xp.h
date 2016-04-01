@@ -21,6 +21,8 @@ extern void XP_rshift(int n, T z, int m, T x, int s, int fill);
 extern int XP_length(int n, T x);
 extern unsigned long XP_fromint(int n, T z, unsigned long u);
 extern unsigned long XP_toint(int n, T x);
+extern int XP_fromstr(int n, T z, const char* str, int base, char** end);
+extern char* XP_tostr(char* str, int size, int base, int n, T x);
 
 #undef T
 
