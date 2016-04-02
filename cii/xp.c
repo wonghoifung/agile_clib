@@ -205,4 +205,13 @@ int XP_cmp(int n, T x, T y) {
 	return x[i] - y[i];
 }
 
+void XP_lshift(int n, T z, int m, T x, int s, int fill) {
+	fill = fill ? 0xFF : 0;
+	// shift left by s / 8 bytes
+
+	s %= 8;
+	if (s > 0)
+		// shift z left by s bits
+}
+
 
