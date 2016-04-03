@@ -208,10 +208,27 @@ int XP_cmp(int n, T x, T y) {
 void XP_lshift(int n, T z, int m, T x, int s, int fill) {
 	fill = fill ? 0xFF : 0;
 	// shift left by s / 8 bytes
+	{
+		int i, j = n - 1;
+		if (n > m)
+			i = m - 1;
+		else 
+			i = n - s / 8 - 1;
+		for (; j >= m + s / 8; j--)
+			z[j] = 0;
+		for (; i >= 0; i--, j--)
+			z[j] = x[i];
+		for (; j >= 0; j--)
+			z[j] = fill;
+	}
 
 	s %= 8;
 	if (s > 0)
-		// shift z left by s bits
+	// shift z left by s bits
+	{
+		XP_product(n, z, z, 1<<s);
+		z[0] |= fill >> (8 - s);
+	}
 }
 
 
