@@ -234,10 +234,21 @@ void XP_lshift(int n, T z, int m, T x, int s, int fill) {
 void XP_rshift(int n, T z, int m, T x, int s, int fill) {
 	fill = fill ? 0xFF : 0;
 	// shift right by s / 8 bytes
+	{
+		int i, j = 0;
+		for (i = s / 8; i < m && j < n; i++, j++)
+			z[j] = x[i];
+		for (; j < n; j++)
+			z[j] = fill;
+	}
 
 	s %= 8;
 	if (s > 0)
-		// shift z right by s bits
+	// shift z right by s bits
+	{
+		XP_quotient(n, z, z, 1 << s);
+		z[n - 1] |= fill << (8 - s);
+	}
 }
 
 
