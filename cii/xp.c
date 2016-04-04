@@ -231,4 +231,13 @@ void XP_lshift(int n, T z, int m, T x, int s, int fill) {
 	}
 }
 
+void XP_rshift(int n, T z, int m, T x, int s, int fill) {
+	fill = fill ? 0xFF : 0;
+	// shift right by s / 8 bytes
+
+	s %= 8;
+	if (s > 0)
+		// shift z right by s bits
+}
+
 
