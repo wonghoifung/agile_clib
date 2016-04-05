@@ -7,6 +7,15 @@
 #define BASE (1<<8)
 
 // data
+static char map[] = {
+	 0,  1,  2,  3,  4,  5,  6,  7,  8,  9,
+	36, 36, 36, 36, 36, 36, 36,
+	10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
+	23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
+	36, 36, 36, 36, 36, 36,
+	10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
+	23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35
+};
 
 // functions
 unsigned long XP_fromint(int n, T z, unsigned long u) {
@@ -249,6 +258,53 @@ void XP_rshift(int n, T z, int m, T x, int s, int fill) {
 		XP_quotient(n, z, z, 1 << s);
 		z[n - 1] |= fill << (8 - s);
 	}
+}
+
+int XP_fromstr(int n, T z, const char* str, int base, char** end) {
+	const char* p = str;
+	assert(p);
+	assert(base >= 2 && base <= 36);
+	// skip white space
+	while (*p && isspace(*p)) p++;
+
+	if (/* p is a digit in base */(*p && isalnum(*p) && map[*p - '0'] < base)) {
+		int carry;
+		for (; /* p is a digit in base */(*p && isalnum(*p) && map[*p - '0'] < base); p++) {
+			carry = XP_product(n, z, z, base);
+			if (carry) break;
+			XP_sum(n, z, z, map[*p - '0']);
+		}
+		if (end) *end = (char*)p;
+		return carry;
+	} else {
+		if (end) *end = (char*)str;
+		return 0;
+	}
+}
+
+char* XP_tostr(char* str, int size, int base, int n, T x) {
+	int i = 0;
+	assert(str);
+	assert(base >= 2 && base <= 36);
+	do {
+		int r = XP_quotient(n, x, x, base);
+		assert(i < size);
+		str[i++] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[r];
+		while (n > 1 && x[n - 1] == 0) n--;
+	} while (n > 1 && x[0] != 0);
+	assert(i < size);
+	str[i] = '\0';
+	// reverse str
+	{
+		int j;
+		for (j = 0; j < --i; j++) {
+			char c = str[j];
+			str[j] = str[i];
+			str[i] = c;
+		}
+	}
+
+	return str;
 }
 
 
