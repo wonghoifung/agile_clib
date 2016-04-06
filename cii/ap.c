@@ -64,6 +64,15 @@ static T add(T z, T x, T y) {
 	return normalize(z, z->size);
 }
 
+static T sub(T z, T x, T y) {
+	int borrow, n = y->ndigits;
+	borrow = XP_sub(n, z->digits, x->digits, y->digits, 0);
+	if (x->ndigits > n)
+		borrow = XP_diff(x->ndigits - n, &z->digits[n], &x->digits[n], borrow);
+	assert(borrow == 0);
+	return normalize(z, z->size);
+}
+
 // functions
 T AP_new(long int n) {
 	return set(mk(sizeof (long int)), n);
@@ -107,7 +116,84 @@ T AP_add(T x, T y) {
 		if (cmp(x, y) > 0) {
 			z = sub(mk(x->ndigits), x, y);
 			z->sign = iszero(z) ? 1 : x->sign;
+		} else {
+			z = sub(mk(y->ndigits), y, x);
+			z->sign = iszero(z) ? 1 : -x->sign;
 		}
 	}
 	return z;
+}
+
+T AP_sub(T x, T y) {
+	T z;
+	assert(x);
+	assert(y);
+	if (!((x->sign ^ y->sign) == 0)) {
+		z = add(mk(maxdigits(x,y)+1), x, y);
+		z->sign = iszero(z) ? 1 : x->sign;
+	} else {
+		// set z to x - y when x and y hane the same sign
+		if (cmp(x, y) > 0) {
+			z = sub(mk(x->ndigits), x, y);
+			z->sign = iszero(z) ? 1 : x->sign;
+		} else {
+			z = sub(mk(y->ndigits), y, x);
+			z->sign = iszero(z) ? 1 : -x->sign;
+		}
+	}
+	return z;
+}
+
+T AP_div(T x, T y) {
+	T q, r;
+	
+	// q <- x / y, r <- x mod y
+	assert(x);
+	assert(y);
+	assert(!iszero(y));
+	q = mk(x->ndigits);
+	r = mk(y->ndigits);
+	{
+		XP_T tmp = ALLOC(x->ndigits + y->ndigits + 2);
+		XP_div(x->ndigits, q->digits, x->digits, y->ndigits, y->digits, r->digits, tmp);
+		FREE(tmp);
+	}
+	normalize(q, q->size);
+	normalize(r, r->size);
+	q->sign = iszero(q) || ((x->sign ^ y->sign) == 0) ? 1 : -1;
+
+	if (!((x->sign ^ y->sign) == 0) && !iszero(r)) {
+		int carry = XP_sum(q->size, q->digits, q->digits, 1);
+		assert(carry == 0);
+		normalize(q, q->size);
+	}
+	AP_free(&r);
+	return q;
+}
+
+T AP_mod(T x, T y) {
+	T q, r;
+
+	// q <- x / y, r <- x mod y
+	assert(x);
+	assert(y);
+	assert(!iszero(y));
+	q = mk(x->ndigits);
+	r = mk(y->ndigits);
+	{
+		XP_T tmp = ALLOC(x->ndigits + y->ndigits + 2);
+		XP_div(x->ndigits, q->digits, x->digits, y->ndigits, y->digits, r->digits, tmp);
+		FREE(tmp);
+	}
+	normalize(q, q->size);
+	normalize(r, r->size);
+	q->sign = iszero(q) || ((x->sign ^ y->sign) == 0) ? 1 : -1;
+
+	if (!((x->sign ^ y->sign) == 0) && !iszero(r)) {
+		int borrow = XP_sub(r->size, r->digits, y->digits, r->digits, 0);
+		assert(borrow == 0);
+		normalize(r, r->size);
+	}
+	AP_free(&q);
+	return r;
 }
