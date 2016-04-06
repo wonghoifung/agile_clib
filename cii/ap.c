@@ -24,6 +24,7 @@ struct T {
 
 // prototypes
 static T normalize(T z, int n);
+static int cmp(T x, T y);
 
 // static functions
 static T mk(int size) {
@@ -79,6 +80,13 @@ static T mulmod(T x, T y, T p) {
 	z = AP_mod(xy, p);
 	AP_free(&xy);
 	return z;
+}
+
+static int cmp(T x, T y) {
+	if (x->ndigits != y->ndigits)
+		return x->ndigits - y->ndigits;
+	else 
+		return XP_cmp(x->ndigits, x->digits, y->digits);
 }
 
 // functions
@@ -248,4 +256,81 @@ T AP_pow(T x, T y, T p) {
 		}
 	}
 	return z;
+}
+
+int AP_cmp(T x, T y) {
+	assert(x);
+	assert(y);
+	if (!((x->sign ^ y->sign) == 0))
+		return x->sign;
+	else if (x->sign == 1)
+		return cmp(x, y);
+	else 
+		return cmp(y, x);
+}
+
+T AP_addi(T x, long int y) {
+	// declare and initialize t
+	unsigned char d[sizeof (unsigned long)];
+	struct T t;
+	t.size = sizeof d;
+	t.digits = d;
+
+	return AP_add(x, set(&t, y));
+}
+
+T AP_subi(T x, long int y) {
+	// declare and initialize t
+	unsigned char d[sizeof (unsigned long)];
+	struct T t;
+	t.size = sizeof d;
+	t.digits = d;
+
+	return AP_sub(x, set(&t, y));
+}
+
+T AP_muli(T x, long int y) {
+	// declare and initialize t
+	unsigned char d[sizeof (unsigned long)];
+	struct T t;
+	t.size = sizeof d;
+	t.digits = d;
+
+	return AP_mul(x, set(&t, y));
+}
+
+T AP_divi(T x, long int y) {
+	// declare and initialize t
+	unsigned char d[sizeof (unsigned long)];
+	struct T t;
+	t.size = sizeof d;
+	t.digits = d;
+
+	return AP_div(x, set(&t, y));
+}
+
+int AP_cmpi(T x, long int y) {
+	// declare and initialize t
+	unsigned char d[sizeof (unsigned long)];
+	struct T t;
+	t.size = sizeof d;
+	t.digits = d;
+
+	return AP_cmp(x, set(&t, y));
+}
+
+long int AP_modi(T x, long int y) {
+	long int rem;
+	T r;
+
+	// declare and initialize t
+	unsigned char d[sizeof (unsigned long)];
+	struct T t;
+	t.size = sizeof d;
+	t.digits = d;
+
+	r = AP_mod(x, set(&t, y));
+	rem = XP_toint(r->ndigits, r->digits);
+	AP_free(&r);
+	return rem;
 }
