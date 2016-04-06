@@ -14,7 +14,7 @@ extern long int AP_toint(T x);
 extern char* AP_tostr(char* str, int size, int base, T x);
 extern void AP_fmt(int code, va_list* app, int put(int c, void* cl), void* cl, unsigned char flags[], int width, int precision);
 extern void AP_free(T* z);
-extern T AP_eng(T x);
+extern T AP_neg(T x);
 extern T AP_add(T x, T y);
 extern T AP_sub(T x, T y);
 extern T AP_mul(T x, T y);

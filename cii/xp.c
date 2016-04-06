@@ -147,7 +147,7 @@ int XP_div(int n, T q, T x, int m, T y, T r, T tmp) {
 	} else {
 		// long division
 		int k;
-		unsigned char *rem = tmp, *dp = tmp + n + 1;
+		unsigned char *rem = tmp, *dq = tmp + n + 1;
 		assert(2 <= m && m <= n);
 		memcpy(rem, x, n);
 		rem[n] = 0;
@@ -282,16 +282,18 @@ int XP_fromstr(int n, T z, const char* str, int base, char** end) {
 	}
 }
 
-char* XP_tostr(char* str, int size, int base, int n, T x) {
+char* XP_tostr(char *str, int size, int base, int n, T x) {
 	int i = 0;
 	assert(str);
 	assert(base >= 2 && base <= 36);
 	do {
 		int r = XP_quotient(n, x, x, base);
 		assert(i < size);
-		str[i++] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[r];
-		while (n > 1 && x[n - 1] == 0) n--;
-	} while (n > 1 && x[0] != 0);
+		str[i++] =
+			"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[r];
+		while (n > 1 && x[n-1] == 0)
+			n--;
+	} while (n > 1 || x[0] != 0);
 	assert(i < size);
 	str[i] = '\0';
 	// reverse str
@@ -303,7 +305,6 @@ char* XP_tostr(char* str, int size, int base, int n, T x) {
 			str[i] = c;
 		}
 	}
-
 	return str;
 }
 

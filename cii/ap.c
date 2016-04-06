@@ -398,7 +398,7 @@ T AP_fromstr(const char* str, int base, char** end) {
 		p = start;
 	}
 
-	carry = XP_fromint(z->size, z->digits, p, base, &endp);
+	carry = XP_fromstr(z->size, z->digits, p, base, &endp); 
 	assert(carry == 0);
 	normalize(z, z->size);
 	if (endp == p) {
