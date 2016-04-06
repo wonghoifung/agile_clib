@@ -334,3 +334,120 @@ long int AP_modi(T x, long int y) {
 	AP_free(&r);
 	return rem;
 }
+
+T AP_lshift(T x, int s) {
+	T z;
+	assert(x);
+	assert(s >= 0);
+	z = mk(x->ndigits + ((s + 7) & ~7) / 8);
+	XP_lshift(z->size, z->digits, x->ndigits, x->digits, s, 0);
+	z->sign = x->sign;
+	return normalize(z, z->size);
+}
+
+T AP_rshift(T x, int s) {
+	assert(x);
+	assert(s >= 0);
+	if (s >= 8 * x->ndigits) {
+		return AP_new(0);
+	} else {
+		T z = mk(x->ndigits - s / 8);
+		XP_rshift(z->size, z->digits, x->ndigits, x->digits, s, 0);
+		normalize(z, z->size);
+		z->sign = iszero(z) ? 1 : x->sign;
+		return z;
+	}
+}
+
+long int AP_toint(T x) {
+	unsigned long u;
+	assert(x);
+	u = XP_toint(x->ndigits, x->digits) % (LONG_MAX + 1UL);
+	if (x->sign == -1)
+		return -(long)u;
+	else
+		return (long)u;
+}
+
+T AP_fromstr(const char* str, int base, char** end) {
+	T z;
+	const char* p = str;
+	char *endp, sign = '\0';
+	int carry;
+
+	assert(p);
+	assert(base >= 2 && base <= 36);
+	while (*p && isspace(*p)) p++;
+	if (*p == '-' || *p == '+')
+		sign = *p++;
+	// z <- 0
+	{
+		const char* start;
+		int k, n = 0;
+		for (; *p == '0' && p[1] == '0'; p++)
+			;
+		start = p;
+		for (; /* *p is a digit in base */
+				('0' <= *p && *p <= '9' && *p < '0' + base ||
+				 'a' <= *p && *p <= 'z' && *p < 'a' + base - 10 ||
+				 'A' <= *p && *p <= 'Z' && *p < 'A' + base - 10); p++)
+			n++;
+		for (k = 1; (1 << k) < base; k++)
+			;
+		z = mk(((k * n + 7) & ~7) / 8);
+		p = start;
+	}
+
+	carry = XP_fromint(z->size, z->digits, p, base, &endp);
+	assert(carry == 0);
+	normalize(z, z->size);
+	if (endp == p) {
+		endp = (char*)str;
+		z = AP_new(0);
+	} else {
+		z->sign = iszero(z) || sign != '-' ? 1 : -1;
+	}
+	if (end) *end = (char*)endp;
+	return z;
+}
+
+char* AP_tostr(char* str, int size, int base, T x) {
+	XP_T q;
+
+	assert(x);
+	assert(base >= 2 && base <= 36);
+	assert(str == NULL || size > 1);
+	if (str == NULL) {
+		// size <- number characters in str
+		{
+			int k;
+			for (k = 5; (1 << k) > base; k--)
+				;
+			size = (8 * x->ndigits) / k + 1 + 1;
+			if (x->sign == -1) size++;
+		}
+
+		str = ALLOC(size);
+	}
+	q = ALLOC(x->ndigits);
+	memcpy(q, x->digits, x->ndigits);
+	if (x->sign == -1) {
+		str[0] = '-';
+		XP_tostr(str + 1, size - 1, base, x->ndigits, q);
+	} else {
+		XP_tostr(str, size, base, x->ndigits, q);
+	}
+	FREE(q);
+	return str;
+}
+
+void AP_fmt(int code, va_list* app, int put(int c, void* cl), void* cl, unsigned char flags[], int width, int precision) {
+	T x;
+	char* buf;
+	assert(app && flags);
+	x = va_arg(*app, T);
+	assert(x);
+	buf = AP_tostr(NULL, 0, 10, x);
+	Fmt_putd(buf, strlen(buf), put, cl, flags, width, precision);
+	FREE(buf);
+}
