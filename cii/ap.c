@@ -20,6 +20,7 @@ struct T {
 // macros
 #define iszero(x) ((x)->ndigits == 1 && (x)->digits[0] == 0)
 #define maxdigits(x,y) ((x)->ndigits > (y)->ndigits ? (x)->ndigits : (y)->ndigits)
+#define isone(x) ((x)->ndigits==1 && (x)->digits[0]==1)
 
 // prototypes
 static T normalize(T z, int n);
@@ -71,6 +72,13 @@ static T sub(T z, T x, T y) {
 		borrow = XP_diff(x->ndigits - n, &z->digits[n], &x->digits[n], borrow);
 	assert(borrow == 0);
 	return normalize(z, z->size);
+}
+
+static T mulmod(T x, T y, T p) {
+	T z, xy = AP_mul(x,y);
+	z = AP_mod(xy, p);
+	AP_free(&xy);
+	return z;
 }
 
 // functions
@@ -196,4 +204,48 @@ T AP_mod(T x, T y) {
 	}
 	AP_free(&q);
 	return r;
+}
+
+T AP_pow(T x, T y, T p) {
+	T z;
+	assert(x);
+	assert(y);
+	assert(y->sign == 1);
+	assert(!p || p->sign == 1 && !iszero(p) && !isone(p));
+	// special cases
+	if (iszero(x)) return AP_new(0);
+	if (iszero(y)) return AP_new(1);
+	if (isone(x)) return AP_new(/* y is even */(((y)->digits[0] & 1) == 0) ? 1 : x->sign);
+
+	if (p) {
+		// z <- x^y mod p
+		if (isone(y)) {
+			z = AP_mod(x, p);
+		} else {
+			T y2 = AP_rshift(y, 1), t = AP_pow(x, y2, p);
+			z = mulmod(t, t, p);
+			AP_free(&y2);
+			AP_free(&t);
+			if (!(((y)->digits[0] & 1) == 0)) {
+				z = mulmod(y2 = AP_mod(x, p), t = z, p);
+				AP_free(&y2);
+				AP_free(&t);
+			}
+		}
+	} else {
+		// z <- x^y
+		if (isone(y)) {
+			z = AP_addi(x, 0);
+		} else {
+			T y2 = AP_rshift(y, 1), t = AP_pow(x, y2, NULL);
+			z = AP_mul(t, t);
+			AP_free(&y2);
+			AP_free(&t);
+			if (!(((y)->digits[0] & 1) == 0)) {
+				z = AP_mul(x, t = z);
+				AP_free(&t);
+			}
+		}
+	}
+	return z;
 }
