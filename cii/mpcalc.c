@@ -1,3 +1,7 @@
+// not read this chapter yet
+
+#if 0
+
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
@@ -180,4 +184,5 @@ int main(int argc, char *argv[]) {
 	return EXIT_SUCCESS;
 }
 
+#endif
 

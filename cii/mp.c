@@ -1,3 +1,7 @@
+// not read this chapter yet
+
+#if 0
+
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>
@@ -739,3 +743,4 @@ void MP_fmt(int code, va_list *app, int put(int c, void *cl), void *cl, unsigned
 	Fmt_putd(buf, strlen(buf), put, cl, flags, width, precision);
 	FREE(buf);
 }
+#endif
