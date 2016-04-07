@@ -3,7 +3,9 @@
 // #include "ring.h"
 // #include "bit.h"
 // #include "fmt.h"
-#include "text.h"
+// #include "text.h"
+
+#include <stdio.h>
 
 int main() {
 	// test_array();
@@ -11,5 +13,21 @@ int main() {
 	// test_ring();
 	// test_bit();
 	// test_fmt();
-	test_text();
+	// test_text();
+
+	#if alpha
+	{
+		printf("alpha\n");
+	}
+	#elif mips
+	{
+		printf("mips\n");
+	}
+	#elif sparc
+	{
+		printf("sparc\n");
+	}
+	#else
+	unsupported platform
+	#endif
 }
