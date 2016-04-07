@@ -27,10 +27,10 @@ int main() {
 	{
 		printf("sparc\n");
 	}
-	#elif __i386__
-	{
-		printf("__i386__\n");
-	}
+	// #elif __i386__
+	// {
+	// 	printf("__i386__\n");
+	// }
 	#elif linux && i386
 	{
 		printf("linux && i386\n");
