@@ -7,8 +7,13 @@
 #include "mem.h"
 
 // sort types
+struct args {
+	int* a;
+	int lb, ub;
+};
 
 // sort data
+int cutoff = 10000;
 
 // sort functions
 int partition(int a[], int i, int j) {
@@ -29,6 +34,45 @@ int partition(int a[], int i, int j) {
 	a[k] = a[j];
 	a[j] = t;
 	return j;
+}
+
+// TODO Fmt_print is nonreentrant
+int quick(void* cl) {
+	struct args* p = cl;
+	int lb = p->lb, ub = p->ub;
+	if (lb < ub) {
+		int k = partition(p->a, lb, ub);
+		// quick
+		p->lb = lb;
+		p->ub = k - 1;
+		if (k - lb > cutoff) {
+			Thread_T t;
+			t = Thread_new(quick, p, sizeof *p, NULL);
+			Fmt_print("thread %p sorted %d..%d\n", t, lb, k-1);
+		} else {
+			quick(p);
+		}
+		p->lb = k + 1;
+		p->ub = ub;
+		if (ub - k > cutoff) {
+			Thread_T t;
+			t = Thread_new(quick, p, sizeof *p, NULL);
+			Fmt_print("thread %p sorted %d..%d\n", t, k+1, ub);
+		} else {
+			quick(p);
+		}
+	}
+	return EXIT_SUCCESS;
+}
+
+void sort(int* x, int n, int argc, char* argv[]) {
+	struct args args;
+	if (argc >= 3) cutoff = atoi(argv[2]);
+	args.a = x;
+	args.lb = 0;
+	args.ub = n - 1;
+	quick(&args);
+	Thread_join(NULL);
 }
 
 int main(int argc, char* argv[]) {
