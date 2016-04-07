@@ -256,7 +256,7 @@ T Thread_new(int apply(void*), void* args, int nbytes, ...) {
 
 		args = t->sp;
 	}
-	#if #elif linux && i386
+	#if linux && i386
 	{
 	  extern void _thrstart(void);
 	  t->sp -= 4/4;
