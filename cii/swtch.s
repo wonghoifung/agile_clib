@@ -1,23 +1,3 @@
-#if alpha
-
-; ALPHA swtch
-
-; ALPHA startup
-
-#elif mips
-
-; SPARC swtch
-
-; SPARC startup
-
-#elif sparc
-
-; MIPS swtch
-
-; MIPS startup
-
-#elif linux && i386
-
 .align	4
 .globl	__swtch
 .globl	_swtch
@@ -52,8 +32,3 @@ _thrstart:
 __ENDMONITOR:
 _ENDMONITOR:
 
-#else
-
-unsupported platform
-
-#endif
