@@ -119,6 +119,15 @@ static void release(void) {
 	critical--; } while (0);
 }
 
+static int interrupt(int sig, int code, struct sigcontext* scp) {
+	if (critical || scp->sc_pc >= (unsigned long)_MONITOR && scp->sc_pc <= (unsigned long)_ENDMONITOR)
+		return 0;
+	put(current, &ready);
+	sigsetmask(scp->sc_mask);
+	run();
+	return 0;
+}
+
 // thread functions
 int Thread_init(int preempt, ...) {
 	assert(preempt == 0 || preempt == 1);
@@ -128,6 +137,22 @@ int Thread_init(int preempt, ...) {
 	nthreads = 1;
 	if (preempt) {
 		// initialize preemptive scheduling
+		{
+			struct sigaction sa;
+			memset(&sa, '\0', sizeof sa);
+			sa.sa_handler = (void (*)())interrupt;
+			if (sigaction(SIGVTALRM, &sa, NULL) < 0)
+				return 0;
+		}
+		{
+			struct itimerval it;
+			it.it_value.tv_sec     =  0;
+			it.it_value.tv_usec    = 50;
+			it.it_interval.tv_sec  =  0;
+			it.it_interval.tv_usec = 50;
+			if (setitimer(ITIMER_VIRTUAL, &it, NULL) < 0)
+				return 0;
+		}
 	}
 	return 1;
 }
