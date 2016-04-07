@@ -27,9 +27,17 @@ int main() {
 	{
 		printf("sparc\n");
 	}
+	#elif __i386__
+	{
+		printf("__i386__\n");
+	}
 	#elif linux && i386
 	{
 		printf("linux && i386\n");
+	}
+	#elif __x86_64__
+	{
+		printf("__x86_64__\n");
 	}
 	#else
 	unsupported platform
