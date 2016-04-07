@@ -256,17 +256,15 @@ T Thread_new(int apply(void*), void* args, int nbytes, ...) {
 
 		args = t->sp;
 	}
-	#if alpha
+	#if #elif linux && i386
 	{
-		// initialize an ALPHA stack
-	}
-	#elif mips
-	{
-		// initialize a MIPS stack
-	}
-	#elif sparc
-	{
-		// initialize a SPARC stack
+	  extern void _thrstart(void);
+	  t->sp -= 4/4;
+	  *t->sp = (unsigned long)_thrstart;
+	  t->sp -= 16/4;
+	  t->sp[4/4]  = (unsigned long)apply;
+	  t->sp[8/4]  = (unsigned long)args;
+	  t->sp[12/4] = (unsigned long)t->sp + (4+16)/4; 
 	}
 	#else
 	unsupported platform
