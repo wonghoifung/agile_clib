@@ -27,6 +27,10 @@ int main() {
 	{
 		printf("sparc\n");
 	}
+	#elif linux && i386
+	{
+		printf("linux && i386\n");
+	}
 	#else
 	unsupported platform
 	#endif
