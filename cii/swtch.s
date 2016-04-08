@@ -25,6 +25,7 @@ __thrstart:
 _thrstart:
 	pushl	%edi
 	call	*%esi
+	subl    $12,%esp
 	pushl	%eax
 	call	Thread_exit
 .globl	__ENDMONITOR
