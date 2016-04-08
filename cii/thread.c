@@ -119,52 +119,7 @@ static void release(void) {
 	critical--; } while (0);
 }
 
-#if 0
-struct sigcontext {
-        unsigned long r8;
-        unsigned long r9;
-        unsigned long r10;
-        unsigned long r11;
-        unsigned long r12;
-        unsigned long r13;
-        unsigned long r14;
-        unsigned long r15;
-        unsigned long rdi;
-        unsigned long rsi;
-        unsigned long rbp;
-        unsigned long rbx;
-        unsigned long rdx;
-        unsigned long rax;
-        unsigned long rcx;
-        unsigned long rsp;
-        unsigned long rip;
-        unsigned long eflags;           /* RFLAGS */
-        unsigned short cs;
-        unsigned short gs;
-        unsigned short fs;
-        unsigned short __pad0;
-        unsigned long err;
-        unsigned long trapno;
-        unsigned long oldmask;
-        unsigned long cr2;
-        struct _fpstate *fpstate;       /* zero when no FPU context */
-        unsigned long reserved1[8];
-};
-#endif
-
-#if linux
-// #include <asm/sigcontext.h>
-// static int interrupt(int sig, struct sigcontext_struct sc) {
-// 	if (critical || sc.eip >= (unsigned long)_MONITOR && sc.eip <= (unsigned long)_ENDMONITOR)
-// 		return 0;
-// 	put(current, &ready);
-// 	do { critical++;
-// 	sigsetmask(sc.oldmask);
-// 	critical--; } while (0);
-// 	run();
-// 	return 0;
-// }
-
+#if linux && __x86_64__
 static int interrupt(int sig, int code, struct sigcontext* scp) {
 	if (critical || scp->rip >= (unsigned long)_MONITOR && scp->rip <= (unsigned long)_ENDMONITOR)
 		return 0;
@@ -173,7 +128,18 @@ static int interrupt(int sig, int code, struct sigcontext* scp) {
 	run();
 	return 0;
 }
-
+#elif linux && i386
+#include <asm/sigcontext.h>
+static int interrupt(int sig, struct sigcontext_struct sc) {
+	if (critical || sc.eip >= (unsigned long)_MONITOR && sc.eip <= (unsigned long)_ENDMONITOR)
+		return 0;
+	put(current, &ready);
+	do { critical++;
+	sigsetmask(sc.oldmask);
+	critical--; } while (0);
+	run();
+	return 0;
+}
 #else
 static int interrupt(int sig, int code, struct sigcontext* scp) {
 	if (critical || scp->sc_pc >= (unsigned long)_MONITOR && scp->sc_pc <= (unsigned long)_ENDMONITOR)
@@ -350,6 +316,7 @@ T Thread_new(int apply(void*), void* args, int nbytes, ...) {
 	}
 	#elif linux && __x86_64__
 	{
+	  printf("Thread_new: linux && __x86_64__\n");
 	  extern void _thrstart(void);
 	  t->sp -= 8/8;
 	  *t->sp = (unsigned long)_thrstart;
