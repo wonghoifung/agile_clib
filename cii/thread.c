@@ -263,9 +263,9 @@ void Thread_alert(T t) {
 }
 
 #if __x86_64__
-#define K 32
-#define K_1 31
-#define K_1U 31U
+#define K 256
+#define K_1 255
+#define K_1U 255U
 #else
 #define K 16
 #define K_1 15
@@ -324,7 +324,8 @@ T Thread_new(int apply(void*), void* args, int nbytes, ...) {
 	#if linux && i386
 	{
 	  extern void _thrstart(void);
-	  t->sp -= 4/4;
+	  // t->sp -= 4/4;
+	  t->sp -= 16/4;	/* keep stack aligned to 16-byte boundaries */
 	  *t->sp = (unsigned long)_thrstart;
 	  t->sp -= 16/4;
 	  t->sp[4/4]  = (unsigned long)apply;
