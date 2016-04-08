@@ -123,6 +123,11 @@ static void release(void) {
 
 #if linux && __x86_64__
 static int interrupt(int sig, int code, struct sigcontext* scp) {
+	printf("interrupt rip: %p, start:%p, end:%p\n", scp->rip, _MONITOR, _ENDMONITOR);
+	if (scp->rip == 0) {
+		printf("in a thread:%p that rip is 0\n", current);
+		return 0;
+	}
 	if (critical || scp->rip >= (unsigned long)_MONITOR && scp->rip <= (unsigned long)_ENDMONITOR)
 		return 0;
 	put(current, &ready);
@@ -341,7 +346,7 @@ T Thread_new(int apply(void*), void* args, int nbytes, ...) {
 	#endif
 
 	nthreads++;
-	// printf("new thread: %p\n", t);
+	printf("new thread: %p\n", t);
 	put(t, &ready);
 	return t;
 }
