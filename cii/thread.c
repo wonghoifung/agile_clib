@@ -123,9 +123,10 @@ static void release(void) {
 
 #if linux && __x86_64__
 static int interrupt(int sig, int code, struct sigcontext* scp) {
-	printf("interrupt rip: %p, start:%p, end:%p\n", scp->rip, _MONITOR, _ENDMONITOR);
+	// printf("interrupt rip: %p, start:%p, end:%p\n", scp->rip, _MONITOR, _ENDMONITOR);
 	if (scp->rip == 0) {
-		printf("in a thread:%p that rip is 0\n", current);
+		// TODO why this happens?
+		// printf("in a thread:%p that rip is 0\n", current);
 		return 0;
 	}
 	if (critical || scp->rip >= (unsigned long)_MONITOR && scp->rip <= (unsigned long)_ENDMONITOR)
@@ -336,17 +337,21 @@ T Thread_new(int apply(void*), void* args, int nbytes, ...) {
 	  extern void _thrstart(void);
 	  t->sp -= 8/8;
 	  *t->sp = (unsigned long)_thrstart;
-	  t->sp -= 32/8;
+	  // t->sp -= 32/8;
+	  // t->sp[8/8]  = (unsigned long)apply;
+	  // t->sp[16/8]  = (unsigned long)args;
+	  // t->sp[24/8] = (unsigned long)t->sp + (8+32)/8; 
+	  t->sp -= 80/8;
 	  t->sp[8/8]  = (unsigned long)apply;
 	  t->sp[16/8]  = (unsigned long)args;
-	  t->sp[24/8] = (unsigned long)t->sp + (8+32)/8; 
+	  t->sp[24/8] = (unsigned long)t->sp + (8+80)/8; 
 	}
 	#else
 	unsupported platform
 	#endif
 
 	nthreads++;
-	printf("new thread: %p\n", t);
+	// printf("new thread: %p\n", t);
 	put(t, &ready);
 	return t;
 }
