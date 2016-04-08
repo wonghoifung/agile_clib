@@ -15,6 +15,12 @@ int main() {
 	// test_fmt();
 	// test_text();
 
+	#if X86_FXSR_MAGIC
+	{
+		printf("MAGIC\n");
+	}
+	#endif
+
 	#if alpha
 	{
 		printf("alpha\n");
