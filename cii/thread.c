@@ -119,6 +119,19 @@ static void release(void) {
 	critical--; } while (0);
 }
 
+#if linux
+#include <asm/sigcontext.h>
+static int interrupt(int sig, struct sigcontext_struct sc) {
+	if (critical || sc.eip >= (unsigned long)_MONITOR && sc.eip <= (unsigned long)_ENDMONITOR)
+		return 0;
+	put(current, &ready);
+	do { critical++;
+	sigsetmask(sc.oldmask);
+	critical--; } while (0);
+	run();
+	return 0;
+}
+#else
 static int interrupt(int sig, int code, struct sigcontext* scp) {
 	if (critical || scp->sc_pc >= (unsigned long)_MONITOR && scp->sc_pc <= (unsigned long)_ENDMONITOR)
 		return 0;
@@ -127,6 +140,7 @@ static int interrupt(int sig, int code, struct sigcontext* scp) {
 	run();
 	return 0;
 }
+#endif
 
 // thread functions
 int Thread_init(int preempt, ...) {
