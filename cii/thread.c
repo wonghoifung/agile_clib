@@ -263,9 +263,9 @@ void Thread_alert(T t) {
 }
 
 #if __x86_64__
-#define K 256
-#define K_1 255
-#define K_1U 255U
+#define K 32
+#define K_1 31
+#define K_1U 31U
 #else
 #define K 16
 #define K_1 15
@@ -336,7 +336,8 @@ T Thread_new(int apply(void*), void* args, int nbytes, ...) {
 	{
 	  // printf("Thread_new: linux && __x86_64__\n");
 	  extern void _thrstart(void);
-	  t->sp -= 8/8;
+	  // t->sp -= 8/8;
+	  t->sp -= 32/8;	// TODO
 	  *t->sp = (unsigned long)_thrstart;
 	  // t->sp -= 32/8;
 	  // t->sp[8/8]  = (unsigned long)apply;
