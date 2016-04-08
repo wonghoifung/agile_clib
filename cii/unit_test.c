@@ -35,6 +35,10 @@ int main() {
 	{
 		printf("linux && i386\n");
 	}
+	// #elif __amd64
+	// {
+	// 	printf("__amd64\n");
+	// }
 	#elif __x86_64__
 	{
 		printf("__x86_64__\n");
