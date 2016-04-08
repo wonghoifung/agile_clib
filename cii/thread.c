@@ -126,7 +126,7 @@ static int interrupt(int sig, int code, struct sigcontext* scp) {
 	// printf("interrupt rip: %p, start:%p, end:%p\n", scp->rip, _MONITOR, _ENDMONITOR);
 	if (scp->rip == 0) {
 		// TODO why this happens?
-		// printf("in a thread:%p that rip is 0\n", current);
+		printf("current thread:%p, rip is 0\n", current);
 		return 0;
 	}
 	if (critical || scp->rip >= (unsigned long)_MONITOR && scp->rip <= (unsigned long)_ENDMONITOR)
