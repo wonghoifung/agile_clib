@@ -15,6 +15,10 @@ int main() {
 	// test_fmt();
 	// test_text();
 
+	printf("%d\n", sizeof(unsigned long));
+	printf("%d\n", sizeof(unsigned long*));
+	printf("%d\n", sizeof(void*));
+	
 	#if X86_FXSR_MAGIC
 	{
 		printf("MAGIC\n");

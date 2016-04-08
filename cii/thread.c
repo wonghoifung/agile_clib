@@ -94,7 +94,9 @@ static void run(void) {
 	current = get(&ready);
 	t->estack = Except_stack;
 	Except_stack = current->estack;
+	// printf("switch from %p to %p...\n", t, current);
 	_swtch(t, current);
+	// printf("switch done, current: %p...\n", current);
 }
 
 static void testalert(void) {
@@ -254,6 +256,15 @@ void Thread_alert(T t) {
 	}
 }
 
+#if __x86_64__
+#define K 32
+#define K_1 31
+#define K_1U 31U
+#else
+#define K 16
+#define K_1 15
+#define K_1U 15U
+#endif
 T Thread_new(int apply(void*), void* args, int nbytes, ...) {
 	T t;
 	assert(current);
@@ -263,7 +274,7 @@ T Thread_new(int apply(void*), void* args, int nbytes, ...) {
 	
 	// allocate resources for a new thread
 	{
-		int stacksize = (16 * 1024 + sizeof (*t) + nbytes + 15) & ~15;
+		int stacksize = (K * 1024 + sizeof (*t) + nbytes + K_1) & ~K_1;
 		release();
 
 		// begin critical region
@@ -284,7 +295,7 @@ T Thread_new(int apply(void*), void* args, int nbytes, ...) {
 
 		// initialize's stack pointer
 		t->sp = (void*)((char*)t + stacksize);
-		while (((unsigned long)t->sp) & 15)
+		while (((unsigned long)t->sp) & K_1)
 			t->sp--;
 	}
 
@@ -292,7 +303,7 @@ T Thread_new(int apply(void*), void* args, int nbytes, ...) {
 	
 	// initialize t's state
 	if (nbytes > 0) {
-		t->sp -= ((nbytes + 15U) & ~15) / sizeof (*t->sp);
+		t->sp -= ((nbytes + K_1U) & ~K_1) / sizeof (*t->sp);
 
 		// begin critical region
 		do { critical++;
@@ -316,7 +327,7 @@ T Thread_new(int apply(void*), void* args, int nbytes, ...) {
 	}
 	#elif linux && __x86_64__
 	{
-	  printf("Thread_new: linux && __x86_64__\n");
+	  // printf("Thread_new: linux && __x86_64__\n");
 	  extern void _thrstart(void);
 	  t->sp -= 8/8;
 	  *t->sp = (unsigned long)_thrstart;
@@ -330,6 +341,7 @@ T Thread_new(int apply(void*), void* args, int nbytes, ...) {
 	#endif
 
 	nthreads++;
+	// printf("new thread: %p\n", t);
 	put(t, &ready);
 	return t;
 }
