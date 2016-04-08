@@ -1,4 +1,5 @@
-as -o swtch.o swtch.s 
+#as -o swtch.o swtch.s
+cc -c -o swtch.o swtch.s 
 cc -c -o thread.o thread.c
 cc -c -o mem.o mem.c
 cc -c -o fmt.o fmt.c
