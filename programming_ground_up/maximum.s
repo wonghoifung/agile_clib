@@ -26,5 +26,4 @@ start_loop:
 	jmp start_loop
 loop_exit:
 	movl $1, %eax
-	int 0x80
-	
+	int $0x80
