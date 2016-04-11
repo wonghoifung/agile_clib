@@ -94,7 +94,7 @@ static void run(void) {
 	current = get(&ready);
 	t->estack = Except_stack;
 	Except_stack = current->estack;
-	// printf("switch from %p to %p...\n", t, current);
+	printf("switch from %p to %p...\n", t, current);
 	_swtch(t, current);
 	// printf("switch done, current: %p...\n", current);
 }
@@ -245,6 +245,7 @@ int Thread_join(T t) {
 
 void Thread_exit(int code) {
 	assert(current);
+	printf("Thread_exit: %p\n", current);
 	release();
 	if (current != &root) {
 		current->next = freelist;
