@@ -11,6 +11,7 @@
 struct args {
 	Sem_T* mutex;
 	int* ip;
+	int threadid;
 };
 
 // spin functions
@@ -23,6 +24,7 @@ int unsafe(void* cl) {
 
 int safe(void* cl) {
 	struct args* p = cl;
+	printf("safe, threadid:%d\n", p->threadid);
 	int i;
 	for (i = 0; i < NBUMP; i++) 
 		LOCK(*p->mutex)
@@ -39,7 +41,7 @@ int main(int argc, char* argv[]) {
 	assert(preempt == 1);
 	if (argc >= 2) m = atoi(argv[1]);
 	n = 0;
-
+#if 0
 	// increment n unsafely
 	{
 		int i;
@@ -50,7 +52,7 @@ int main(int argc, char* argv[]) {
 
 	Fmt_print("%d == %d\n", n, NBUMP * m);
 	n = 0;
-
+#endif
 	// increment n safely
 	{
 		int i;
@@ -59,8 +61,11 @@ int main(int argc, char* argv[]) {
 		Sem_init(&mutex, 1);
 		args.mutex = &mutex;
 		args.ip = &n;
-		for (i = 0; i < m; i++)
-			Thread_new(safe, &args, sizeof args, NULL);
+		for (i = 0; i < m; i++) {
+			args.threadid = i + 1;
+			Thread_T t = Thread_new(safe, &args, sizeof args, NULL);
+			printf("threadid:%d, threadhandle:%p\n", args.threadid, t);
+		}
 		Thread_join(NULL);
 	}
 

@@ -34,13 +34,33 @@ _thrstart:
 __ENDMONITOR:
 _ENDMONITOR:
 #elif linux && __x86_64__
+
+#define PRINT 1
+
+#if PRINT
+.section .data
+
+info:
+	.string "in _thrstart\n"
+info_len = . - info
+
+.equ SYS_WRITE, 4
+.equ SYS_EXIT, 1
+
+.equ STDOUT, 1
+
+.equ LINUX_SYSCALL, 0x80
+
+.section .text
+#endif
+
 .align	8
 .globl	__swtch
 .globl	_swtch
 __swtch:
 _swtch:
 	# subq	$32,%rsp
-	subq	$80,%rsp
+	subq	$96,%rsp
 
 	movq	%rbx,0(%rsp)
 	movq	%rsi,8(%rsp)
@@ -53,6 +73,8 @@ _swtch:
 	movq	%r13,56(%rsp)
 	movq	%r14,64(%rsp)
 	movq	%r15,72(%rsp)
+	movq	%r8,80(%rsp)
+	movq	%r9,88(%rsp)
 
 	movq	%rdi,%rax     # %rax = from
 	movq	%rsp,0(%rax)  # from->sp = %rsp
@@ -69,17 +91,35 @@ _swtch:
 	movq	56(%rsp),%r13
 	movq	64(%rsp),%r14
 	movq	72(%rsp),%r15
+	movq	80(%rsp),%r8
+	movq	88(%rsp),%r9
 
 	# addq	$32, %rsp
-	addq	$80, %rsp
+	addq	$96, %rsp
 	ret
 .align	8
 .globl	__thrstart
 .globl	_thrstart
 __thrstart:
 _thrstart:
+
 	call	*%rsi
 	movq 	%rax,%rdi
+
+	###############
+#if PRINT
+	pushq %rsi
+	pushq %rdi
+	movq $info_len, %rdx
+	movq $SYS_WRITE, %rax
+	movq $STDOUT, %rbx
+	movq $info, %rcx
+	int $LINUX_SYSCALL
+	popq %rdi
+	popq %rsi
+#endif
+	###############
+
 	call	Thread_exit
 .globl	__ENDMONITOR
 .globl	_ENDMONITOR

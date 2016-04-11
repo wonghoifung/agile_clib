@@ -123,7 +123,7 @@ static void release(void) {
 
 #if linux && __x86_64__
 static int interrupt(int sig, int code, struct sigcontext* scp) {
-	// printf("interrupt rip: %p, start:%p, end:%p\n", scp->rip, _MONITOR, _ENDMONITOR);
+	printf("interrupt rip: %p, start:%p, end:%p\n", scp->rip, _MONITOR, _ENDMONITOR);
 	if (scp->rip == 0) {
 		// TODO why this happens?
 		printf("current thread:%p, rip is 0\n", current);
@@ -139,6 +139,7 @@ static int interrupt(int sig, int code, struct sigcontext* scp) {
 #elif linux && i386
 #include <asm/sigcontext.h>
 static int interrupt(int sig, struct sigcontext_struct sc) {
+	printf("interrupt eip: %p, start:%p, end:%p\n", sc.eip, _MONITOR, _ENDMONITOR);
 	if (critical || sc.eip >= (unsigned long)_MONITOR && sc.eip <= (unsigned long)_ENDMONITOR)
 		return 0;
 	put(current, &ready);
@@ -245,7 +246,7 @@ int Thread_join(T t) {
 
 void Thread_exit(int code) {
 	assert(current);
-	printf("Thread_exit: %p\n", current);
+	printf("Thread_exit: %p, nthreads: %d\n", current, nthreads);
 	release();
 	if (current != &root) {
 		current->next = freelist;
@@ -362,10 +363,10 @@ T Thread_new(int apply(void*), void* args, int nbytes, ...) {
 	  // t->sp[8/8]  = (unsigned long)apply;
 	  // t->sp[16/8]  = (unsigned long)args;
 	  // t->sp[24/8] = (unsigned long)t->sp + (8+32)/8; 
-	  t->sp -= 80/8;
+	  t->sp -= 96/8;
 	  t->sp[8/8]  = (unsigned long)apply;
 	  t->sp[16/8]  = (unsigned long)args;
-	  t->sp[24/8] = (unsigned long)t->sp + (8+80)/8; 
+	  t->sp[24/8] = (unsigned long)t->sp + (8+96)/8; 
 	}
 	#else
 	unsupported platform
