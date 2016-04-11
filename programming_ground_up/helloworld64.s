@@ -2,7 +2,7 @@
 
 info:
 	.string "hello world\n"
-	info_len = . - info
+info_len = . - info
 
 .equ SYS_WRITE, 4
 .equ SYS_EXIT, 1
