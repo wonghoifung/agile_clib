@@ -73,6 +73,15 @@ continue_read_loop:
 	popl %eax
 	addl $4, %esp
 	# write out result
+	###############
+	pushl %eax
+	movl %eax, %edx
+	movl $SYS_WRITE, %eax
+	movl $STDOUT, %ebx
+	movl $BUFFER_DATA, %ecx
+	int $LINUX_SYSCALL
+	popl %eax
+	###############
 	movl %eax, %edx
 	movl $SYS_WRITE, %eax
 	movl ST_FD_OUT(%ebp), %ebx
