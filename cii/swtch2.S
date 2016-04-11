@@ -35,7 +35,7 @@ __ENDMONITOR:
 _ENDMONITOR:
 #elif linux && __x86_64__
 
-#define PRINT 1
+#define PRINT 0
 
 #if PRINT
 .section .data

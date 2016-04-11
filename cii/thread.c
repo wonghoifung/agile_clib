@@ -94,7 +94,7 @@ static void run(void) {
 	current = get(&ready);
 	t->estack = Except_stack;
 	Except_stack = current->estack;
-	printf("switch from %p to %p...\n", t, current);
+	// printf("switch from %p to %p...\n", t, current);
 	_swtch(t, current);
 	// printf("switch done, current: %p...\n", current);
 }
@@ -122,24 +122,32 @@ static void release(void) {
 }
 
 #if linux && __x86_64__
-static int interrupt(int sig, int code, struct sigcontext* scp) {
-	printf("interrupt rip: %p, start:%p, end:%p\n", scp->rip, _MONITOR, _ENDMONITOR);
-	if (scp->rip == 0) {
+// #include <execinfo.h>
+static int interrupt(int sig, struct sigcontext scp) {
+	printf("interrupt rip: %p, current: %p, start:%p, end:%p\n", scp.rip, current, _MONITOR, _ENDMONITOR);
+	if (scp.rip == 0) {
 		// TODO why this happens?
+		/*
+		   man sigaction... and then I get
+		   
+		   Undocumented
+		       Before  the  introduction of SA_SIGINFO it was also possible to get some additional information, namely by using a sa_handler with second argument of type struct sigcontext.
+		       See the relevant kernel sources for details.  This use is obsolete now.
+		*/
 		printf("current thread:%p, rip is 0\n", current);
 		return 0;
 	}
-	if (critical || scp->rip >= (unsigned long)_MONITOR && scp->rip <= (unsigned long)_ENDMONITOR)
+	if (critical || scp.rip >= (unsigned long)_MONITOR && scp.rip <= (unsigned long)_ENDMONITOR)
 		return 0;
 	put(current, &ready);
-	sigsetmask(scp->oldmask);
+	sigsetmask(scp.oldmask);
 	run();
 	return 0;
 }
 #elif linux && i386
 #include <asm/sigcontext.h>
 static int interrupt(int sig, struct sigcontext_struct sc) {
-	printf("interrupt eip: %p, start:%p, end:%p\n", sc.eip, _MONITOR, _ENDMONITOR);
+	printf("interrupt eip: %p, current: %p, start:%p, end:%p\n", sc.eip, current, _MONITOR, _ENDMONITOR);
 	if (critical || sc.eip >= (unsigned long)_MONITOR && sc.eip <= (unsigned long)_ENDMONITOR)
 		return 0;
 	put(current, &ready);
