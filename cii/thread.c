@@ -159,8 +159,26 @@ static int interrupt(int sig, int code, struct sigcontext* scp) {
 }
 #endif
 
+static int is_in_correct_region(void* f) {
+	return f > _MONITOR && f < _ENDMONITOR;
+}
+static void interface_addresses() {
+	printf("Thread_init: %d\n", is_in_correct_region(Thread_init));
+	printf("Thread_new: %d\n", is_in_correct_region(Thread_new));
+	printf("Thread_exit: %d\n", is_in_correct_region(Thread_exit));
+	printf("Thread_alert: %d\n", is_in_correct_region(Thread_alert));
+	printf("Thread_self: %d\n", is_in_correct_region(Thread_self));
+	printf("Thread_join: %d\n", is_in_correct_region(Thread_join));
+	printf("Thread_pause: %d\n", is_in_correct_region(Thread_pause));
+	printf("Sem_init: %d\n", is_in_correct_region(Sem_init));
+	printf("Sem_new: %d\n", is_in_correct_region(Sem_new));
+	printf("Sem_wait: %d\n", is_in_correct_region(Sem_wait));
+	printf("Sem_signal: %d\n", is_in_correct_region(Sem_signal));
+}
+
 // thread functions
 int Thread_init(int preempt, ...) {
+	// interface_addresses();
 	assert(preempt == 0 || preempt == 1);
 	assert(current == NULL);
 	root.handle = &root;
