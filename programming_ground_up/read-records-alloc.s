@@ -22,7 +22,7 @@ _start:
 	call allocate_init
 
 	pushl $RECORD_SIZE
-	call allcate 
+	call allocate 
 	movl %eax, record_buffer_ptr
 
 	movl $SYS_OPEN, %eax
@@ -66,7 +66,7 @@ record_read_loop:
 finished_reading:
 	pushl record_buffer_ptr
 	call deallocate
-	
+
 	movl $SYS_EXIT, %eax
 	movl $0, %ebx
 	int $LINUX_SYSCALL
