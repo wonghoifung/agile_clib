@@ -26,6 +26,7 @@ allocate_init:
 	movl $SYS_BRK, %eax
 	movl $0, %ebx
 	int $LINUX_SYSCALL
+	# %eax now has the last valid address, and we want mem loc after that
 	# init current_break heap_begin
 	incl %eax
 	movl %eax, current_break
@@ -89,11 +90,11 @@ move_break:
 	popl %ebx
 	popl %ecx
 	popl %eax
-	# give it away
+	# %eax is now the last break, give it away
 	movl $UNAVAILABLE, HDR_AVAIL_OFFSET(%eax)
 	movl %ecx, HDR_SIZE_OFFSET(%eax)
 	addl $HEADER_SIZE, %eax
-	# save the new break
+	# save the new break in theory...
 	movl %ebx, current_break
 	# return
 	movl %ebp, %esp
