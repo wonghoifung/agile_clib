@@ -1,0 +1,2 @@
+ld -dynamic-linker /lib/ld-linux.so.2 -o helloworld-lib helloworld-lib.o -lc
+
