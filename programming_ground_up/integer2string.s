@@ -1,8 +1,8 @@
 .equ ST_VALUE, 8
 .equ ST_BUFFER, 12
 
-.globl interger2string
-.type interger2string, @function
+.globl integer2string
+.type integer2string, @function
 integer2string:
 	pushl %ebp
 	movl %esp, %ebp
