@@ -3,7 +3,7 @@
 
 .globl interger2string
 .type interger2string, @function
-interger2string:
+integer2string:
 	pushl %ebp
 	movl %esp, %ebp
 	# current char count
