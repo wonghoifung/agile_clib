@@ -19,6 +19,7 @@
 #include "agile_encrypt.h"
 #include "agile_graph_alg.h"
 #include "agile_geometry.h"
+#include "agile_rbtree.h"
 
 int main() {
 	//test_agile_list();
@@ -40,7 +41,8 @@ int main() {
 	//test_agile_bit();
 	//test_agile_encrypt();
 	//test_agile_graph_alg();
-	test_agile_geometry();
+	//test_agile_geometry();
+	test_agile_rbtree();
 	return 0;
 }
 
